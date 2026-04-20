@@ -1,0 +1,215 @@
+/* ====================================================
+   WireGuard Panel — Main Stylesheet
+   ==================================================== */
+
+/* Variables */
+:root {
+  --sidebar-width: 240px;
+  --sidebar-bg: #1a1f2e;
+  --sidebar-text: #a0aec0;
+  --sidebar-active: #ffffff;
+  --sidebar-active-bg: rgba(99, 102, 241, 0.2);
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.05);
+  --topbar-height: 60px;
+  --primary: #6366f1;
+  --body-bg: #f1f5f9;
+}
+
+/* ----------------------------------------------------------------
+   Global
+---------------------------------------------------------------- */
+body {
+  font-family: "Vazirmatn", "Segoe UI", Tahoma, sans-serif;
+  background: var(--body-bg);
+  margin: 0;
+}
+
+/* ----------------------------------------------------------------
+   Login
+---------------------------------------------------------------- */
+.login-page {
+  background: linear-gradient(135deg, #1a1f2e 0%, #2d3748 100%);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  border-radius: 16px;
+  border: none;
+}
+
+/* ----------------------------------------------------------------
+   Sidebar
+---------------------------------------------------------------- */
+.sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: var(--sidebar-width);
+  background: var(--sidebar-bg);
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+  transition: transform 0.25s ease;
+}
+
+.sidebar-brand {
+  padding: 1.25rem 1.5rem;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 1rem 0;
+  overflow-y: auto;
+}
+
+.sidebar-nav a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 1.5rem;
+  color: var(--sidebar-text);
+  text-decoration: none;
+  font-size: 0.9rem;
+  border-radius: 0;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.sidebar-nav a:hover {
+  background: var(--sidebar-hover-bg);
+  color: #e2e8f0;
+}
+
+.sidebar-nav a.active {
+  background: var(--sidebar-active-bg);
+  color: var(--sidebar-active);
+  border-right: 3px solid var(--primary);
+}
+
+.sidebar-nav a i {
+  width: 18px;
+  text-align: center;
+}
+
+.sidebar-divider {
+  margin: 0.5rem 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--sidebar-text);
+  font-size: 0.8rem;
+}
+
+/* ----------------------------------------------------------------
+   Main Content
+---------------------------------------------------------------- */
+.main-content {
+  margin-right: var(--sidebar-width);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  height: var(--topbar-height);
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.content-body {
+  padding: 1.5rem;
+  flex: 1;
+}
+
+/* ----------------------------------------------------------------
+   Stat Cards
+---------------------------------------------------------------- */
+.stat-card {
+  border-radius: 12px;
+  transition: transform 0.15s;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.stat-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #1a202c;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: #718096;
+  margin-top: 2px;
+}
+
+/* ----------------------------------------------------------------
+   Cards
+---------------------------------------------------------------- */
+.card {
+  border-radius: 12px;
+}
+
+.card-header {
+  border-radius: 12px 12px 0 0 !important;
+}
+
+/* ----------------------------------------------------------------
+   Table
+---------------------------------------------------------------- */
+.table th {
+  font-weight: 600;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #6b7280;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+/* ----------------------------------------------------------------
+   Responsive
+---------------------------------------------------------------- */
+@media (max-width: 991.98px) {
+  .sidebar {
+    transform: translateX(100%);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .main-content {
+    margin-right: 0;
+  }
+}
