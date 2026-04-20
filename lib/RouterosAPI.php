@@ -36,51 +36,40 @@ class RouterosAPI
         stream_set_timeout($this->socket, $timeout);
 
         // --- Try new-style plain-text login (RouterOS 6.43+) ---
+        // We MUST use readResponse() (reads until !done) instead of readSentence()
+        // so that ALL sentences (including the closing !done after a !trap) are
+        // consumed before we do anything else.  Leaving !done unread and then
+        // writing to a socket that the router has already closed causes the
+        // "Broken pipe" notice and the subsequent "Login failed" error.
         $this->sendSentence(['/login', '=name=' . $user, '=password=' . $password]);
-        $response = $this->readSentence();
+        $result = $this->readResponse(); // consumes sentences until !done
 
-        if (!empty($response) && $response[0] === '!done') {
-            // Check there is no !trap mixed in
-            $hasTrap = false;
-            foreach ($response as $word) {
-                if (strpos($word, '!trap') === 0) {
-                    $hasTrap = true;
+        if ($result !== false) {
+            // readResponse() returns an array on success (no !trap).
+            // If the router is old (< 6.43) it ignores =password= and replies
+            // with !done =ret=<challenge> — that ends up in $result[0]['ret'].
+            if (!empty($result[0]['ret'])) {
+                // --- Old-style MD5 challenge-response (same connection) ---
+                $challenge = pack('H*', $result[0]['ret']);
+                $md5       = '00' . md5(chr(0) . $password . $challenge);
+                $this->sendSentence(['/login', '=name=' . $user, '=response=' . $md5]);
+                $result2 = $this->readResponse();
+                if ($result2 !== false) {
+                    return true;
                 }
+                // error already set by readResponse()
+                $this->disconnect();
+                return false;
             }
-            if (!$hasTrap) {
-                return true;
-            }
+
+            // Clean !done — new-style login succeeded.
+            return true;
         }
 
-        // --- Fallback: old MD5 challenge-response login ---
-        $this->sendSentence(['/login', '=name=' . $user]);
-        $response = $this->readSentence();
-
-        $challenge = '';
-        foreach ($response as $word) {
-            if (strpos($word, '=ret=') === 0) {
-                $challenge = pack('H*', substr($word, 5));
-                break;
-            }
+        // readResponse() returned false → a !trap was received.
+        if ($this->error === '') {
+            $this->error = 'Login failed';
         }
-
-        if ($challenge !== '') {
-            $md5 = '00' . md5(chr(0) . $password . $challenge);
-            $this->sendSentence(['/login', '=name=' . $user, '=response=' . $md5]);
-            $response = $this->readSentence();
-
-            if (!empty($response) && $response[0] === '!done') {
-                return true;
-            }
-        }
-
-        $this->error = 'Login failed';
-        foreach ($response as $word) {
-            if (strpos($word, '=message=') === 0) {
-                $this->error = substr($word, 9);
-            }
-        }
-
         $this->disconnect();
         return false;
     }
@@ -147,7 +136,7 @@ class RouterosAPI
     {
         $this->writeLen(strlen($word));
         if (strlen($word) > 0) {
-            fwrite($this->socket, $word);
+            @fwrite($this->socket, $word);
         }
         if ($this->debug) {
             echo '>>> ' . $word . PHP_EOL;
@@ -157,22 +146,22 @@ class RouterosAPI
     private function writeLen(int $len): void
     {
         if ($len < 0x80) {
-            fwrite($this->socket, chr($len));
+            @fwrite($this->socket, chr($len));
         } elseif ($len < 0x4000) {
             $len |= 0x8000;
-            fwrite($this->socket, chr(($len >> 8) & 0xFF) . chr($len & 0xFF));
+            @fwrite($this->socket, chr(($len >> 8) & 0xFF) . chr($len & 0xFF));
         } elseif ($len < 0x200000) {
             $len |= 0xC00000;
-            fwrite($this->socket, chr(($len >> 16) & 0xFF) . chr(($len >> 8) & 0xFF) . chr($len & 0xFF));
+            @fwrite($this->socket, chr(($len >> 16) & 0xFF) . chr(($len >> 8) & 0xFF) . chr($len & 0xFF));
         } elseif ($len < 0x10000000) {
             $len |= 0xE0000000;
-            fwrite(
+            @fwrite(
                 $this->socket,
                 chr(($len >> 24) & 0xFF) . chr(($len >> 16) & 0xFF) .
                     chr(($len >> 8)  & 0xFF) . chr($len & 0xFF)
             );
         } else {
-            fwrite(
+            @fwrite(
                 $this->socket,
                 chr(0xF0) .
                     chr(($len >> 24) & 0xFF) . chr(($len >> 16) & 0xFF) .
