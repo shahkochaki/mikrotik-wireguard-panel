@@ -1,4 +1,5 @@
 <?php
+
 /**
  * AJAX endpoint — tests MikroTik connection step by step.
  * Returns JSON array of diagnostic steps.

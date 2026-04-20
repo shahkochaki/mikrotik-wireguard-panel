@@ -93,31 +93,33 @@ include __DIR__ . '/templates/header.php';
 </div>
 
 <script>
-// Fetch router identity asynchronously so it never blocks the page
-(function () {
-    fetch('ajax_test_router.php', { method: 'POST' })
-        .then(r => r.json())
-        .then(data => {
-            const el   = document.getElementById('routerIdentity');
-            const card = document.getElementById('routerCard');
-            const last = data.steps?.[data.steps.length - 1];
-            if (data.success) {
-                // identity is in step 3 detail ("نام روتر: X")
-                const identityStep = data.steps?.find(s => s.label.includes('اطلاعات'));
-                const name = identityStep?.detail?.replace('نام روتر: ', '') ?? 'متصل';
-                el.textContent = name;
-            } else {
-                el.innerHTML = '<span class="text-danger" style="font-size:.8rem"><i class="fas fa-triangle-exclamation me-1"></i>قطع</span>';
-                card.querySelector('.stat-icon').classList.replace('bg-info-subtle', 'bg-danger-subtle');
-                card.querySelector('.stat-icon').classList.replace('text-info', 'text-danger');
-                if (last) el.title = last.detail;
-            }
-        })
-        .catch(() => {
-            document.getElementById('routerIdentity').innerHTML =
-                '<span class="text-secondary" style="font-size:.8rem">نامشخص</span>';
-        });
-})();
+    // Fetch router identity asynchronously so it never blocks the page
+    (function() {
+        fetch('ajax_test_router.php', {
+                method: 'POST'
+            })
+            .then(r => r.json())
+            .then(data => {
+                const el = document.getElementById('routerIdentity');
+                const card = document.getElementById('routerCard');
+                const last = data.steps?.[data.steps.length - 1];
+                if (data.success) {
+                    // identity is in step 3 detail ("نام روتر: X")
+                    const identityStep = data.steps?.find(s => s.label.includes('اطلاعات'));
+                    const name = identityStep?.detail?.replace('نام روتر: ', '') ?? 'متصل';
+                    el.textContent = name;
+                } else {
+                    el.innerHTML = '<span class="text-danger" style="font-size:.8rem"><i class="fas fa-triangle-exclamation me-1"></i>قطع</span>';
+                    card.querySelector('.stat-icon').classList.replace('bg-info-subtle', 'bg-danger-subtle');
+                    card.querySelector('.stat-icon').classList.replace('text-info', 'text-danger');
+                    if (last) el.title = last.detail;
+                }
+            })
+            .catch(() => {
+                document.getElementById('routerIdentity').innerHTML =
+                    '<span class="text-secondary" style="font-size:.8rem">نامشخص</span>';
+            });
+    })();
 </script>
 
 <!-- Recent users table -->

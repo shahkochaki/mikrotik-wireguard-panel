@@ -169,61 +169,69 @@ include __DIR__ . '/templates/header.php';
 </div>
 
 <script>
-document.getElementById('btnTestConn').addEventListener('click', function () {
-    const form   = document.querySelector('form');
-    const panel  = document.getElementById('connTestPanel');
-    const steps  = document.getElementById('connTestSteps');
-    const spin   = document.getElementById('connTestSpinner');
-    const btn    = this;
+    document.getElementById('btnTestConn').addEventListener('click', function() {
+        const form = document.querySelector('form');
+        const panel = document.getElementById('connTestPanel');
+        const steps = document.getElementById('connTestSteps');
+        const spin = document.getElementById('connTestSpinner');
+        const btn = this;
 
-    // Collect current form values (not yet saved)
-    const host = form.querySelector('[name=mt_host]').value.trim();
-    const port = form.querySelector('[name=mt_port]').value.trim();
-    const user = form.querySelector('[name=mt_user]').value.trim();
-    const pass = form.querySelector('[name=mt_pass]').value;
+        // Collect current form values (not yet saved)
+        const host = form.querySelector('[name=mt_host]').value.trim();
+        const port = form.querySelector('[name=mt_port]').value.trim();
+        const user = form.querySelector('[name=mt_user]').value.trim();
+        const pass = form.querySelector('[name=mt_pass]').value;
 
-    panel.style.display = 'block';
-    steps.innerHTML     = '';
-    spin.style.display  = 'inline-block';
-    btn.disabled        = true;
+        panel.style.display = 'block';
+        steps.innerHTML = '';
+        spin.style.display = 'inline-block';
+        btn.disabled = true;
 
-    const body = new URLSearchParams({ host, port, user, pass });
-
-    fetch('ajax_test_router.php', { method: 'POST', body })
-        .then(r => r.json())
-        .then(data => {
-            spin.style.display = 'none';
-            btn.disabled       = false;
-
-            (data.steps || []).forEach(function (s) {
-                const li = document.createElement('li');
-                li.className = 'list-group-item d-flex align-items-start gap-3';
-
-                const icon = document.createElement('span');
-                icon.innerHTML = s.ok
-                    ? '<i class="fas fa-circle-check text-success mt-1"></i>'
-                    : '<i class="fas fa-circle-xmark text-danger mt-1"></i>';
-
-                const text = document.createElement('div');
-                text.innerHTML =
-                    '<strong>' + s.label + '</strong>' +
-                    '<br><small class="text-muted">' + s.detail + '</small>';
-
-                li.appendChild(icon);
-                li.appendChild(text);
-                steps.appendChild(li);
-            });
-
-            if (!data.steps || data.steps.length === 0) {
-                steps.innerHTML = '<li class="list-group-item text-danger">پاسخ نامعتبر از سرور</li>';
-            }
-        })
-        .catch(function (err) {
-            spin.style.display = 'none';
-            btn.disabled       = false;
-            steps.innerHTML    = '<li class="list-group-item text-danger"><i class="fas fa-triangle-exclamation me-2"></i>خطا در ارسال درخواست: ' + err.message + '</li>';
+        const body = new URLSearchParams({
+            host,
+            port,
+            user,
+            pass
         });
-});
+
+        fetch('ajax_test_router.php', {
+                method: 'POST',
+                body
+            })
+            .then(r => r.json())
+            .then(data => {
+                spin.style.display = 'none';
+                btn.disabled = false;
+
+                (data.steps || []).forEach(function(s) {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item d-flex align-items-start gap-3';
+
+                    const icon = document.createElement('span');
+                    icon.innerHTML = s.ok ?
+                        '<i class="fas fa-circle-check text-success mt-1"></i>' :
+                        '<i class="fas fa-circle-xmark text-danger mt-1"></i>';
+
+                    const text = document.createElement('div');
+                    text.innerHTML =
+                        '<strong>' + s.label + '</strong>' +
+                        '<br><small class="text-muted">' + s.detail + '</small>';
+
+                    li.appendChild(icon);
+                    li.appendChild(text);
+                    steps.appendChild(li);
+                });
+
+                if (!data.steps || data.steps.length === 0) {
+                    steps.innerHTML = '<li class="list-group-item text-danger">پاسخ نامعتبر از سرور</li>';
+                }
+            })
+            .catch(function(err) {
+                spin.style.display = 'none';
+                btn.disabled = false;
+                steps.innerHTML = '<li class="list-group-item text-danger"><i class="fas fa-triangle-exclamation me-2"></i>خطا در ارسال درخواست: ' + err.message + '</li>';
+            });
+    });
 </script>
 
 <!-- Cron info -->
