@@ -23,7 +23,23 @@ class RouterosAPI
     /**
      * Connect and authenticate to the router.
      */
-    public function connect(string $host, string $user, string $password, int $port = 8728, int $timeout = 5): bool
+    /**
+     * Quick TCP port reachability check.
+     * Returns true if the port accepts a connection within $timeout seconds.
+     * Fills $errorMsg on failure.
+     */
+    public static function portCheck(string $host, int $port, int $timeout = 3, string &$errorMsg = ''): bool
+    {
+        $sock = @fsockopen($host, $port, $errno, $errstr, $timeout);
+        if ($sock === false) {
+            $errorMsg = $errstr ? "{$errstr} (errno {$errno})" : "Connection refused or timed out";
+            return false;
+        }
+        fclose($sock);
+        return true;
+    }
+
+    public function connect(string $host, string $user, string $password, int $port = 8728, int $timeout = 4): bool
     {
         $this->error  = '';
         $this->socket = @fsockopen($host, $port, $errno, $errstr, $timeout);

@@ -191,3 +191,80 @@ function mtGetIdentity(): string
         return 'Error: ' . $e->getMessage();
     }
 }
+
+/**
+ * Run a full step-by-step diagnostic against the saved settings.
+ * Returns an array of steps:
+ *   [['label' => '...', 'ok' => true/false, 'detail' => '...'], ...]
+ * The caller can JSON-encode this for AJAX responses.
+ */
+function mtDiagnose(?string $host = null, ?string $user = null, ?string $pass = null, ?int $port = null): array
+{
+    $host = $host ?? getSetting('mt_host', '192.168.88.1');
+    $user = $user ?? getSetting('mt_user', 'admin');
+    $pass = $pass ?? getSetting('mt_pass', '');
+    $port = $port ?? (int) getSetting('mt_port', '8728');
+
+    $steps = [];
+
+    // --- Step 1: Validate settings are filled ---
+    $cfgOk = ($host !== '' && $port > 0 && $user !== '');
+    $steps[] = [
+        'label'  => 'بررسی تنظیمات',
+        'ok'     => $cfgOk,
+        'detail' => $cfgOk
+            ? "host={$host}  port={$port}  user={$user}"
+            : 'آدرس IP، پورت یا نام کاربری پر نشده است.',
+    ];
+    if (!$cfgOk) return $steps;
+
+    // --- Step 2: TCP port reachability ---
+    $portErr = '';
+    $portOk  = RouterosAPI::portCheck($host, $port, 3, $portErr);
+    $steps[] = [
+        'label'  => "اتصال TCP به {$host}:{$port}",
+        'ok'     => $portOk,
+        'detail' => $portOk
+            ? 'پورت باز است و روتر پاسخ می‌دهد.'
+            : "پورت بسته یا قابل دسترس نیست: {$portErr}",
+    ];
+    if (!$portOk) return $steps;
+
+    // --- Step 3: API login ---
+    $api      = new RouterosAPI();
+    $loginOk  = $api->connect($host, $user, $pass, $port, 4);
+    $steps[] = [
+        'label'  => 'ورود به API میکروتیک',
+        'ok'     => $loginOk,
+        'detail' => $loginOk
+            ? 'احراز هویت موفق بود.'
+            : 'خطای ورود: ' . $api->error,
+    ];
+    if (!$loginOk) return $steps;
+
+    // --- Step 4: Fetch identity ---
+    $rows  = $api->comm('/system/identity/print');
+    $name  = $rows[0]['name'] ?? null;
+    $steps[] = [
+        'label'  => 'دریافت اطلاعات روتر',
+        'ok'     => ($name !== null),
+        'detail' => $name !== null
+            ? "نام روتر: {$name}"
+            : 'پاسخ نامعتبر از روتر.',
+    ];
+
+    // --- Step 5: Check WireGuard interface ---
+    $wgIface  = getSetting('wg_interface', 'wireguard1');
+    $wgRows   = $api->comm('/interface/wireguard/print', [], ['?name=' . $wgIface]);
+    $wgFound  = !empty($wgRows);
+    $steps[] = [
+        'label'  => "اینترفیس WireGuard «{$wgIface}»",
+        'ok'     => $wgFound,
+        'detail' => $wgFound
+            ? 'اینترفیس روی روتر وجود دارد.'
+            : "اینترفیس «{$wgIface}» پیدا نشد. نام را در تنظیمات بررسی کنید.",
+    ];
+
+    $api->disconnect();
+    return $steps;
+}

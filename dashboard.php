@@ -14,8 +14,7 @@ $totalUsers   = countUsers();
 $activeUsers  = countActiveUsers();
 $expiredUsers = countExpiredUsers();
 
-// Router identity
-$identity = mtGetIdentity();
+// Router identity is fetched via AJAX on page load (non-blocking)
 
 // Recent users (last 5)
 $recentUsers = dbQuery(
@@ -75,14 +74,16 @@ include __DIR__ . '/templates/header.php';
         </div>
     </div>
     <div class="col-sm-6 col-xl-3">
-        <div class="card stat-card border-0 shadow-sm">
+        <div class="card stat-card border-0 shadow-sm" id="routerCard">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="stat-icon bg-info-subtle text-info">
                         <i class="fas fa-router"></i>
                     </div>
                     <div class="ms-3">
-                        <div class="stat-value" style="font-size:1rem"><?= e($identity) ?></div>
+                        <div class="stat-value" id="routerIdentity" style="font-size:.95rem">
+                            <span class="spinner-border spinner-border-sm text-secondary"></span>
+                        </div>
                         <div class="stat-label">روتر میکروتیک</div>
                     </div>
                 </div>
@@ -90,6 +91,34 @@ include __DIR__ . '/templates/header.php';
         </div>
     </div>
 </div>
+
+<script>
+// Fetch router identity asynchronously so it never blocks the page
+(function () {
+    fetch('ajax_test_router.php', { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            const el   = document.getElementById('routerIdentity');
+            const card = document.getElementById('routerCard');
+            const last = data.steps?.[data.steps.length - 1];
+            if (data.success) {
+                // identity is in step 3 detail ("نام روتر: X")
+                const identityStep = data.steps?.find(s => s.label.includes('اطلاعات'));
+                const name = identityStep?.detail?.replace('نام روتر: ', '') ?? 'متصل';
+                el.textContent = name;
+            } else {
+                el.innerHTML = '<span class="text-danger" style="font-size:.8rem"><i class="fas fa-triangle-exclamation me-1"></i>قطع</span>';
+                card.querySelector('.stat-icon').classList.replace('bg-info-subtle', 'bg-danger-subtle');
+                card.querySelector('.stat-icon').classList.replace('text-info', 'text-danger');
+                if (last) el.title = last.detail;
+            }
+        })
+        .catch(() => {
+            document.getElementById('routerIdentity').innerHTML =
+                '<span class="text-secondary" style="font-size:.8rem">نامشخص</span>';
+        });
+})();
+</script>
 
 <!-- Recent users table -->
 <div class="card border-0 shadow-sm">
