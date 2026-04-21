@@ -34,49 +34,11 @@ try {
             if (!isset($stats[$pid])) continue;
             $s  = $stats[$pid];
             $lh = null;
-            // DEBUG: uncomment next line to see raw value from RouterOS
-            // echo "[DEBUG] peer={$pid} last-handshake raw=" . var_export($s['last-handshake'], true) . "\n";
             $rawLh = $s['last-handshake'] ?? '';
             if (!empty($rawLh) && $rawLh !== 'never') {
-                // Try format 1: RouterOS "jan/15/2024 10:30:00"
-                $months = [
-                    'jan' => 1,
-                    'feb' => 2,
-                    'mar' => 3,
-                    'apr' => 4,
-                    'may' => 5,
-                    'jun' => 6,
-                    'jul' => 7,
-                    'aug' => 8,
-                    'sep' => 9,
-                    'oct' => 10,
-                    'nov' => 11,
-                    'dec' => 12,
-                ];
-                if (preg_match(
-                    '/^(\w{3})\/(\d{1,2})\/(\d{4})\s+(\d{2}:\d{2}:\d{2})$/i',
-                    $rawLh,
-                    $m
-                )) {
-                    $mo = $months[strtolower($m[1])] ?? null;
-                    if ($mo) {
-                        $lh = sprintf('%04d-%02d-%02d %s', $m[3], $mo, $m[2], $m[4]);
-                    }
-                }
-                // Try format 2: ISO-like "2024-01-15 10:30:00"
-                elseif (preg_match('/^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}:\d{2}:\d{2})$/', $rawLh, $m)) {
+                // RouterOS returns ISO format: "2026-04-21 15:35:12"
+                if (preg_match('/^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}:\d{2}:\d{2})$/', $rawLh, $m)) {
                     $lh = "{$m[1]}-{$m[2]}-{$m[3]} {$m[4]}";
-                }
-                // Try format 3: duration "3m25s" → compute absolute time
-                elseif (preg_match('/^(?:(\d+)w)?(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/', $rawLh, $m)) {
-                    $secs = ((int)($m[1] ?? 0) * 604800)
-                        + ((int)($m[2] ?? 0) * 86400)
-                        + ((int)($m[3] ?? 0) * 3600)
-                        + ((int)($m[4] ?? 0) * 60)
-                        + ((int)($m[5] ?? 0));
-                    if ($secs > 0) {
-                        $lh = date('Y-m-d H:i:s', time() - $secs);
-                    }
                 }
             }
             dbQuery(
