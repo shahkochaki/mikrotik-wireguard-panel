@@ -95,7 +95,7 @@ include __DIR__ . '/../templates/header.php';
 <script>
     // Fetch router identity asynchronously so it never blocks the page
     (function() {
-        fetch('ajax_router_info.php')
+        fetch('ajax_router_info')
             .then(r => r.json())
             .then(data => {
                 const el = document.getElementById('routerIdentity');

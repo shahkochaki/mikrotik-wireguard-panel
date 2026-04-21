@@ -3,7 +3,7 @@
 /**
  * Cron job: sync bandwidth from router, disable expired & over-quota users.
  * Recommended schedule: every minute
- *   * * * * * php /path/to/wireguard-panel/cron_check_expiry.php >> /var/log/wg_expiry.log 2>&1
+ *   * * * * * php /path/to/wireguard-panel/check_expiry.php >> /var/log/wg_expiry.log 2>&1
  */
 
 if (PHP_SAPI !== 'cli') {

@@ -18,10 +18,13 @@
 ### ۱. فعال‌سازی API میکروتیک
 
 در Winbox یا ترمینال:
+
 ```
 /ip service enable api
 ```
+
 مطمئن شوید IP پنل شما اجازه اتصال دارد:
+
 ```
 /ip service set api address=<IP-PANEL>/32
 ```
@@ -35,6 +38,7 @@ mysql -u root -p < sql/database.sql
 ### ۳. تنظیم config
 
 فایل `includes/config.php` را باز کرده و مقادیر دیتابیس را ویرایش کنید:
+
 ```php
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'wireguard_panel');
@@ -58,20 +62,20 @@ define('DB_PASS', 'your_password');
 
 ## تنظیمات اولیه (صفحه Settings)
 
-| فیلد | توضیح |
-|------|-------|
-| آدرس IP روتر | IP داخلی میکروتیک (معمولاً ۱۹۲.۱۶۸.۸۸.۱) |
-| نام کاربری میکروتیک | user با دسترسی API |
-| نام اینترفیس WireGuard | مثلاً `wireguard1` |
-| Public Key سرور | کلید عمومی اینترفیس WireGuard روتر |
-| Endpoint | IP عمومی یا دامنه روتر برای کلاینت‌ها |
+| فیلد                   | توضیح                                    |
+| ---------------------- | ---------------------------------------- |
+| آدرس IP روتر           | IP داخلی میکروتیک (معمولاً ۱۹۲.۱۶۸.۸۸.۱) |
+| نام کاربری میکروتیک    | user با دسترسی API                       |
+| نام اینترفیس WireGuard | مثلاً `wireguard1`                       |
+| Public Key سرور        | کلید عمومی اینترفیس WireGuard روتر       |
+| Endpoint               | IP عمومی یا دامنه روتر برای کلاینت‌ها    |
 
 ---
 
 ## Cron Job (انقضا خودکار)
 
 ```bash
-* * * * * php /var/www/html/wireguard-panel/cron_check_expiry.php >> /var/log/wg_expiry.log 2>&1
+* * * * * php /var/www/html/wireguard-panel/check_expiry.php >> /var/log/wg_expiry.log 2>&1
 ```
 
 ---
@@ -113,6 +117,6 @@ wireguard-panel/
 ├── user_toggle.php
 ├── user_config.php     ← دانلود .conf کلاینت
 ├── settings.php
-├── cron_check_expiry.php
+├── check_expiry.php
 └── logout.php
 ```
