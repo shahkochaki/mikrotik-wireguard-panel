@@ -121,7 +121,7 @@ Protect sensitive directories by adding to your web server config (or `.htaccess
 ```apache
 # .htaccess in project root
 <FilesMatch "\.(php)$">
-    # allow access only to the panel/ entry points
+    # allow access only to the administrator/ entry points
 </FilesMatch>
 
 # Block direct access to includes/ and lib/

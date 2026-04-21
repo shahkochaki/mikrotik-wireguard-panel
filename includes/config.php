@@ -26,7 +26,7 @@ if (session_status() === PHP_SESSION_NONE) {
 define('BASE_PATH', dirname(__DIR__));
 
 // Calculate BASE_URL so it always points to the PROJECT ROOT,
-// regardless of which sub-directory (panel/, etc.) the calling script lives in.
+// regardless of which sub-directory (administrator/, etc.) the calling script lives in.
 $_bScheme = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
 $_bHost   = $_SERVER['HTTP_HOST'] ?? 'localhost';
 // Try DOCUMENT_ROOT first — most reliable method
@@ -35,7 +35,7 @@ $_bAppR   = rtrim(str_replace('\\', '/', (string) realpath(BASE_PATH)), '/');
 if ($_bDocR !== '' && str_starts_with($_bAppR, $_bDocR)) {
     $_bPath = substr($_bAppR, strlen($_bDocR)) ?: '/';
 } else {
-    // Fallback: scripts are exactly 1 level deep (panel/) from project root
+    // Fallback: scripts are exactly 1 level deep (administrator/) from project root
     $_bPath = rtrim(dirname(dirname($_SERVER['SCRIPT_NAME'] ?? '/')), '/');
 }
 define('BASE_URL', $_bScheme . '://' . $_bHost . $_bPath);

@@ -4,7 +4,7 @@ Options -Indexes
     RewriteEngine On
 
     # Redirect bare root to panel login
-    RewriteRule ^$ panel/ [R=302,L]
+    RewriteRule ^$ administrator/ [R=302,L]
 
     # Block direct web access to server-side internals
     RewriteRule ^(includes|lib|sql|templates)(/|$) - [F,L]
