@@ -63,6 +63,7 @@ return [
     'col_speed'             => 'Speed',
     'col_expiry'            => 'Expiry',
     'col_last_handshake'    => 'Last Handshake',
+    'col_current_ip'        => 'Current IP',
     'col_status'            => 'Status',
     'col_actions'           => 'Actions',
     'no_expiry'             => 'No expiry',

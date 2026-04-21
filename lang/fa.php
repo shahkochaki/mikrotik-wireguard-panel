@@ -63,6 +63,7 @@ return [
     'col_speed'             => 'سرعت',
     'col_expiry'            => 'انقضا',
     'col_last_handshake'    => 'آخرین اتصال',
+    'col_current_ip'        => 'IP فعلی',
     'col_status'            => 'وضعیت',
     'col_actions'           => 'عملیات',
     'no_expiry'             => 'بدون محدودیت',

@@ -73,6 +73,7 @@ include __DIR__ . '/../templates/header.php';
                         <th><?= __('col_usage') ?></th>
                         <th><?= __('col_expiry') ?></th>
                         <th><?= __('col_last_handshake') ?></th>
+                        <th><?= __('col_current_ip') ?></th>
                         <th><?= __('col_status') ?></th>
                         <th><?= __('col_actions') ?></th>
                     </tr>
@@ -80,7 +81,7 @@ include __DIR__ . '/../templates/header.php';
                 <tbody>
                     <?php if (empty($users)): ?>
                         <tr>
-                            <td colspan="10" class="text-center text-muted py-5">
+                            <td colspan="11" class="text-center text-muted py-5">
                                 <i class="fas fa-users fa-2x d-block mb-2"></i>
                                 <?= __('no_users_registered') ?>
                                 <a href="user_add" class="d-block mt-2"><?= __('add_first_user') ?></a>
@@ -137,6 +138,13 @@ include __DIR__ . '/../templates/header.php';
                                             else                   echo date('Y-m-d H:i:s', $lhTime);
                                             ?>
                                         </span>
+                                    <?php else: ?>
+                                        <span class="text-muted small">—</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <?php if (!empty($u['current_endpoint_address'])): ?>
+                                        <code class="small"><?= e($u['current_endpoint_address']) ?><?= !empty($u['current_endpoint_port']) ? ':' . (int)$u['current_endpoint_port'] : '' ?></code>
                                     <?php else: ?>
                                         <span class="text-muted small">—</span>
                                     <?php endif; ?>
