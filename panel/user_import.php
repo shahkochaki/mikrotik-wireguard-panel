@@ -7,7 +7,7 @@ require_once __DIR__ . '/../includes/mikrotik.php';
 
 requireLogin();
 
-$pageTitle  = 'ایمپورت کاربران از روتر';
+$pageTitle  = __('page_import');
 $errors     = [];
 $imported   = 0;
 $fetchError = null;
@@ -111,14 +111,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $expiry,
                 $dataLimitGb,
                 $isDisabled ? 0 : 1,
-                'ایمپورت از روتر — کلید خصوصی موجود نیست',
+                'Import from router — private key not stored',
             ]
         );
         $imported++;
     }
 
     if ($imported > 0 && empty($errors)) {
-        flashSet('success', "{$imported} کاربر با موفقیت ایمپورت شد.");
+        flashSet('success', "{$imported} user(s) imported successfully.");
         header('Location: users');
         exit;
     }
@@ -133,13 +133,13 @@ include __DIR__ . '/../templates/header.php';
 <?php if ($fetchError): ?>
     <div class="alert alert-danger">
         <i class="fas fa-triangle-exclamation me-2"></i>
-        <strong>خطا در اتصال به روتر:</strong> <?= e($fetchError) ?>
+        <strong><?= __('import_error') ?></strong> <?= e($fetchError) ?>
     </div>
 <?php endif; ?>
 
 <?php if ($errors): ?>
     <div class="alert alert-danger">
-        <strong>خطاها:</strong>
+        <strong><?= __('errors_title') ?></strong>
         <ul class="mb-0 mt-1">
             <?php foreach ($errors as $err): ?>
                 <li><?= e($err) ?></li>
@@ -169,13 +169,13 @@ include __DIR__ . '/../templates/header.php';
     <div class="col-sm-4">
         <div class="card border-0 shadow-sm text-center p-3">
             <div class="fw-bold fs-4 text-success"><?= $alreadyInDb ?></div>
-            <div class="text-muted small">قبلاً ایمپورت شده</div>
+            <div class="text-muted small"><?= __('import_already') ?></div>
         </div>
     </div>
     <div class="col-sm-4">
         <div class="card border-0 shadow-sm text-center p-3">
             <div class="fw-bold fs-4 text-warning"><?= count($newPeers) ?></div>
-            <div class="text-muted small">جدید (قابل ایمپورت)</div>
+            <div class="text-muted small"><?= __('import_new') ?></div>
         </div>
     </div>
 </div>
@@ -183,7 +183,7 @@ include __DIR__ . '/../templates/header.php';
 <?php if (empty($newPeers) && !$fetchError): ?>
     <div class="alert alert-success">
         <i class="fas fa-circle-check me-2"></i>
-        همه پیرهای روتر قبلاً در دیتابیس ثبت شده‌اند.
+        <?= __('import_none') ?>
     </div>
 <?php elseif (!empty($newPeers)): ?>
     <form method="POST" action="">
@@ -198,7 +198,7 @@ include __DIR__ . '/../templates/header.php';
                     انتخاب همه
                 </button>
                 <button type="submit" class="btn btn-sm btn-primary">
-                    <i class="fas fa-file-import me-1"></i>ایمپورت انتخاب‌شده‌ها
+                    <i class="fas fa-file-import me-1"></i><?= __('btn_import_selected') ?>
                 </button>
             </div>
         </div>
@@ -215,7 +215,7 @@ include __DIR__ . '/../templates/header.php';
                         class="form-check-input peer-checkbox" id="peer_<?= $idx ?>">
                     <label class="fw-semibold mb-0 flex-grow-1" for="peer_<?= $idx ?>">
                         <code><?= e($addr) ?></code>
-                        <?= $disabled ? '<span class="badge bg-secondary ms-2">غیرفعال</span>' : '<span class="badge bg-success ms-2">فعال</span>' ?>
+                        <?= $disabled ? '<span class="badge bg-secondary ms-2">' . __('inactive') . '</span>' : '<span class="badge bg-success ms-2">' . __('active') . '</span>' ?>
                     </label>
                     <small class="text-muted d-none d-md-inline" title="Public Key" style="font-family:monospace">
                         <?= e(substr($pubKey, 0, 20)) ?>…
@@ -224,23 +224,23 @@ include __DIR__ . '/../templates/header.php';
                 <div class="card-body peer-fields" style="display:none">
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label class="form-label">نام نمایشی <span class="text-danger">*</span></label>
+                            <label class="form-label"><?= __('lbl_display_name') ?> <span class="text-danger">*</span></label>
                             <input type="text" name="peer[<?= e($peerId) ?>][name]"
                                 class="form-control" placeholder="علی محمدی">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">یوزرنیم <span class="text-danger">*</span></label>
+                            <label class="form-label"><?= __('lbl_username') ?> <span class="text-danger">*</span></label>
                             <input type="text" name="peer[<?= e($peerId) ?>][username]"
                                 class="form-control" dir="ltr" placeholder="ali_m">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">حجم مجاز (GB)</label>
+                            <label class="form-label"><?= __('lbl_data_limit') ?></label>
                             <input type="number" name="peer[<?= e($peerId) ?>][data_limit_gb]"
                                 class="form-control" dir="ltr" min="0.1" step="0.1"
-                                placeholder="بدون محدودیت">
+                                placeholder="<?= __('no_limit') ?>">
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">سرعت دانلود</label>
+                            <label class="form-label"><?= __('lbl_download_speed') ?></label>
                             <select name="peer[<?= e($peerId) ?>][download_speed]" class="form-select">
                                 <?php foreach ($speedOptions as $val => $label): ?>
                                     <option value="<?= $val ?>" <?= $val === '10M' ? 'selected' : '' ?>>
@@ -250,7 +250,7 @@ include __DIR__ . '/../templates/header.php';
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">سرعت آپلود</label>
+                            <label class="form-label"><?= __('lbl_upload_speed') ?></label>
                             <select name="peer[<?= e($peerId) ?>][upload_speed]" class="form-select">
                                 <?php foreach ($speedOptions as $val => $label): ?>
                                     <option value="<?= $val ?>" <?= $val === '10M' ? 'selected' : '' ?>>
@@ -260,7 +260,7 @@ include __DIR__ . '/../templates/header.php';
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">تاریخ انقضا</label>
+                            <label class="form-label"><?= __('lbl_expiry_date') ?></label>
                             <input type="date" name="peer[<?= e($peerId) ?>][expiry_date]"
                                 class="form-control" dir="ltr">
                         </div>
@@ -271,9 +271,9 @@ include __DIR__ . '/../templates/header.php';
 
         <div class="mt-3">
             <button type="submit" class="btn btn-primary">
-                <i class="fas fa-file-import me-2"></i>ایمپورت انتخاب‌شده‌ها
+                <i class="fas fa-file-import me-2"></i><?= __('btn_import_selected') ?>
             </button>
-            <a href="users" class="btn btn-outline-secondary ms-2">انصراف</a>
+            <a href="users" class="btn btn-outline-secondary ms-2"><?= __('cancel') ?></a>
         </div>
     </form>
 
@@ -294,7 +294,7 @@ include __DIR__ . '/../templates/header.php';
                     cb.checked = !allChecked;
                     cb.dispatchEvent(new Event('change'));
                 });
-                this.textContent = allChecked ? 'انتخاب همه' : 'لغو انتخاب';
+                this.textContent = allChecked ? '<?= __('btn_import_selected') ?>' : 'Deselect All';
             });
         });
     </script>

@@ -6,7 +6,7 @@ require_once __DIR__ . '/../includes/functions.php';
 
 requireLogin();
 
-$pageTitle = 'آموزش راه‌اندازی WireGuard';
+$pageTitle = __('page_wg_guide');
 
 $s = getAllSettings();
 $wgInterface = $s['wg_interface'] ?? 'wireguard1';
