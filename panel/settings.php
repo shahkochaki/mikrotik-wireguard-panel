@@ -231,7 +231,7 @@ include __DIR__ . '/../templates/header.php';
     <div class="card-body">
         <p class="mb-2">برای غیرفعال کردن خودکار کاربران منقضی‌شده یک cron job زیر تنظیم کنید:</p>
         <code class="d-block p-3 bg-dark text-light rounded" dir="ltr">
-            * * * * * php <?= e(BASE_PATH) ?>/check_expiry.php >> /var/log/wg_expiry.log 2>&amp;1
+            * * * * * php <?= e(BASE_PATH) ?>/cron/check_expiry.php >> /var/log/wg_expiry.log 2>&amp;1
         </code>
         <p class="mt-2 text-muted small">یا می‌توانید از <a href="users?check_expiry=1">بررسی دستی</a> استفاده کنید.</p>
     </div>

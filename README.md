@@ -75,7 +75,7 @@ define('DB_PASS', 'your_password');
 ## Cron Job (انقضا خودکار)
 
 ```bash
-* * * * * php /var/www/html/wireguard-panel/check_expiry.php >> /var/log/wg_expiry.log 2>&1
+* * * * * php /var/www/html/wireguard-panel/cron/check_expiry.php >> /var/log/wg_expiry.log 2>&1
 ```
 
 ---
@@ -108,6 +108,8 @@ wireguard-panel/
 │   └── footer.php
 ├── sql/
 │   └── database.sql
+├── cron/
+│   └── check_expiry.php
 ├── index.php           ← صفحه ورود
 ├── dashboard.php
 ├── users.php
@@ -117,6 +119,5 @@ wireguard-panel/
 ├── user_toggle.php
 ├── user_config.php     ← دانلود .conf کلاینت
 ├── settings.php
-├── check_expiry.php
 └── logout.php
 ```
