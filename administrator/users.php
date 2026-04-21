@@ -134,7 +134,7 @@ include __DIR__ . '/../templates/header.php';
                                             if ($diff < 60)        echo __('just_now') ?: 'just now';
                                             elseif ($diff < 3600)  echo round($diff / 60) . ' min ago';
                                             elseif ($diff < 86400) echo round($diff / 3600) . ' hr ago';
-                                            else                   echo date('Y-m-d', $lhTime);
+                                            else                   echo date('Y-m-d H:i:s', $lhTime);
                                             ?>
                                         </span>
                                     <?php else: ?>

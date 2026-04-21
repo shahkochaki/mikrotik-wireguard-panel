@@ -49,8 +49,20 @@ try {
                 }
             }
             dbQuery(
-                'UPDATE wg_users SET rx_bytes = ?, tx_bytes = ?, last_handshake = ? WHERE id = ?',
-                [$s['rx'], $s['tx'], $lh, $u['id']]
+                'UPDATE wg_users SET rx_bytes = ?, tx_bytes = ?, last_handshake = ?,
+                    endpoint_address = ?, endpoint_port = ?,
+                    current_endpoint_address = ?, current_endpoint_port = ?
+                 WHERE id = ?',
+                [
+                    $s['rx'],
+                    $s['tx'],
+                    $lh,
+                    $s['endpoint-address'] ?: null,
+                    $s['endpoint-port'] ? (int)$s['endpoint-port'] : null,
+                    $s['current-endpoint-address'] ?: null,
+                    $s['current-endpoint-port'] ? (int)$s['current-endpoint-port'] : null,
+                    $u['id'],
+                ]
             );
         }
         echo "[{$now}] Bandwidth synced for " . count($dbUsers) . " users.\n";
