@@ -142,6 +142,156 @@ Protect sensitive directories by adding to your web server config (or `.htaccess
 
 ---
 
+## WireGuard Setup Tutorial
+
+This section shows a typical MikroTik WireGuard setup before you start managing peers from the panel.
+
+### 1. Create the WireGuard interface on MikroTik
+
+Use Winbox terminal or SSH:
+
+```rsc
+/interface wireguard add name=wireguard1 listen-port=51820 mtu=1420
+```
+
+Verify the interface and copy its public key:
+
+```rsc
+/interface wireguard print detail
+```
+
+You will use this `public-key` value in the panel's **Server Public Key** field.
+
+### 2. Assign an IP address to the WireGuard interface
+
+Pick a VPN subnet that does not overlap with your LAN. Example:
+
+```rsc
+/ip address add address=10.10.10.1/24 interface=wireguard1 comment="WireGuard subnet"
+```
+
+In this example:
+
+- Router WireGuard IP: `10.10.10.1`
+- Client IP pool: `10.10.10.0/24`
+
+Set the same subnet in the panel if your Settings page includes a subnet or address pool field.
+
+### 3. Allow WireGuard traffic through the firewall
+
+Open the WireGuard UDP port on the WAN interface:
+
+```rsc
+/ip firewall filter add chain=input action=accept protocol=udp dst-port=51820 comment="Allow WireGuard"
+```
+
+If your firewall is strict, make sure established and related traffic is already allowed.
+
+### 4. Enable internet access for VPN clients
+
+If clients should reach the internet through the router, add a masquerade rule:
+
+```rsc
+/ip firewall nat add chain=srcnat action=masquerade src-address=10.10.10.0/24 out-interface-list=WAN comment="WG NAT"
+```
+
+If you do not use interface lists, replace `out-interface-list=WAN` with your actual WAN interface name.
+
+### 5. Add routes or LAN access rules if needed
+
+If clients must access internal subnets behind the MikroTik, ensure those subnets are permitted by your firewall. A common case is allowing access from the WireGuard subnet to the LAN:
+
+```rsc
+/ip firewall filter add chain=forward action=accept src-address=10.10.10.0/24 dst-address=192.168.88.0/24 comment="WG to LAN"
+```
+
+Adjust both subnets to match your environment.
+
+### 6. Configure the panel settings
+
+After the router is ready, open **Settings** in the panel and enter:
+
+| Field               | Example                                           |
+| ------------------- | ------------------------------------------------- |
+| Router IP           | `192.168.88.1`                                    |
+| API Port            | `8728`                                            |
+| Username            | `admin` or another API-enabled user               |
+| WireGuard Interface | `wireguard1`                                      |
+| Server Public Key   | output from `/interface wireguard print detail`   |
+| Endpoint            | `vpn.example.com:51820` or `YOUR_PUBLIC_IP:51820` |
+| DNS                 | `1.1.1.1` or your internal DNS                    |
+| Subnet              | `10.10.10.0/24`                                   |
+
+Use **Test Connection** to verify API connectivity and confirm that the WireGuard interface exists.
+
+### 7. Create the first peer from the panel
+
+Once settings are saved:
+
+1. Open the users page.
+2. Add a new user/peer.
+3. Assign an IP such as `10.10.10.2/32`.
+4. Set optional speed, quota, and expiry limits.
+5. Download the generated client configuration.
+
+The panel will:
+
+- generate the keypair,
+- add the peer to MikroTik,
+- optionally create a Simple Queue,
+- and provide a ready-to-import `.conf` file.
+
+### 8. Import the client configuration
+
+On the client device:
+
+1. Install the official WireGuard application.
+2. Create a new tunnel.
+3. Import the generated `.conf` file from the panel.
+4. Activate the tunnel.
+
+Typical client config values look like this:
+
+```ini
+[Interface]
+PrivateKey = <client-private-key>
+Address = 10.10.10.2/32
+DNS = 1.1.1.1
+
+[Peer]
+PublicKey = <server-public-key>
+AllowedIPs = 0.0.0.0/0, ::/0
+Endpoint = vpn.example.com:51820
+PersistentKeepalive = 25
+```
+
+Use `AllowedIPs = 0.0.0.0/0, ::/0` for full-tunnel VPN traffic, or restrict it to internal subnets for split tunneling.
+
+### 9. Verify the tunnel
+
+On MikroTik:
+
+```rsc
+/interface wireguard peers print detail
+```
+
+Check these values:
+
+- `last-handshake` should update after the client connects
+- RX/TX counters should increase when traffic passes
+- the peer should not be disabled
+
+You can also confirm the same information from the panel's live stats and dashboard widgets.
+
+### 10. Common deployment notes
+
+- If the router is behind another modem/router, forward UDP `51820` to the MikroTik.
+- If your public IP changes, use a DNS record or dynamic DNS hostname in the panel's **Endpoint** field.
+- Keep the VPN subnet separate from your LAN subnet to avoid routing conflicts.
+- For mobile clients, `PersistentKeepalive = 25` is usually recommended.
+
+---
+
 ## Settings Page
 
 After logging in, go to **Settings** to connect the panel to your router.
