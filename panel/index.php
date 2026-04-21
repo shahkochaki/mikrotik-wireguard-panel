@@ -15,9 +15,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'] ?? '';
 
     if (empty($username) || empty($password)) {
-        $error = 'نام کاربری و رمز عبور را وارد کنید.';
+        $error = __('login_error_empty');
     } elseif (!attemptLogin($username, $password)) {
-        $error = 'نام کاربری یا رمز عبور اشتباه است.';
+        $error = __('login_error_wrong');
     } else {
         header('Location: dashboard');
         exit;
@@ -31,16 +31,20 @@ function postStr(string $key): string
 }
 ?>
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="<?= currentLang() ?>" dir="<?= langDir() ?>">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ورود — <?= APP_NAME ?></title>
+    <title><?= __('login_btn') ?> — <?= APP_NAME ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css">
+    <?php if (isRtl()): ?>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css">
+    <?php else: ?>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <?php endif; ?>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css">
 </head>
@@ -55,7 +59,8 @@ function postStr(string $key): string
                         <i class="fas fa-shield-halved fa-3x text-primary"></i>
                     </div>
                     <h3 class="fw-bold"><?= APP_NAME ?></h3>
-                    <p class="text-muted small">مدیریت WireGuard میکروتیک</p>
+                    <p class="text-muted small"><?= __('login_subtitle') ?></p>
+                    <div class="mt-2"><?= langSwitcherHtml() ?></div>
                 </div>
 
                 <?php if ($error): ?>
@@ -67,7 +72,7 @@ function postStr(string $key): string
                 <form method="POST" action="" novalidate>
                     <?= csrfField() ?>
                     <div class="mb-3">
-                        <label class="form-label">نام کاربری</label>
+                        <label class="form-label"><?= __('login_username') ?></label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-user"></i></span>
                             <input type="text" name="username" class="form-control"
@@ -76,7 +81,7 @@ function postStr(string $key): string
                         </div>
                     </div>
                     <div class="mb-4">
-                        <label class="form-label">رمز عبور</label>
+                        <label class="form-label"><?= __('login_password') ?></label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-lock"></i></span>
                             <input type="password" name="password" class="form-control"
@@ -84,7 +89,7 @@ function postStr(string $key): string
                         </div>
                     </div>
                     <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
-                        <i class="fas fa-right-to-bracket me-2"></i>ورود به پنل
+                        <i class="fas fa-right-to-bracket me-2"></i><?= __('login_btn') ?>
                     </button>
                 </form>
             </div>
