@@ -50,62 +50,115 @@ Manage peers, monitor bandwidth, enforce data quotas and expiry dates — all fr
 
 ---
 
-## نصب
+## Installation
 
-### ۱. فعال‌سازی API میکروتیک
+### 1. Enable MikroTik API
 
-در Winbox یا ترمینال:
+In Winbox terminal or SSH:
 
 ```
 /ip service enable api
+/ip service set api port=8728
 ```
 
-مطمئن شوید IP پنل شما اجازه اتصال دارد:
+Restrict API access to your panel server IP for security:
 
 ```
-/ip service set api address=<IP-PANEL>/32
+/ip service set api address=<PANEL-SERVER-IP>/32
 ```
 
-### ۲. آماده‌سازی دیتابیس
+### 2. Create the WireGuard Interface (if not already done)
+
+```
+/interface wireguard add name=wireguard1 listen-port=51820
+/interface wireguard print
+```
+
+Note the `public-key` shown — you will need it in Settings.
+
+### 3. Set up the database
+
+Create a database and user, then import the schema:
 
 ```bash
-mysql -u root -p < sql/database.sql
+mysql -u root -p -e "CREATE DATABASE wireguard_panel CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root -p wireguard_panel < sql/database.sql
 ```
 
-### ۳. تنظیم config
+If upgrading from v1, also run:
 
-فایل `includes/config.php` را باز کرده و مقادیر دیتابیس را ویرایش کنید:
+```bash
+mysql -u root -p wireguard_panel < sql/migration_v2.sql
+```
+
+### 4. Configure the application
+
+Open `includes/config.php` and set your database credentials:
 
 ```php
 define('DB_HOST', 'localhost');
+define('DB_PORT', '3306');
 define('DB_NAME', 'wireguard_panel');
-define('DB_USER', 'root');
-define('DB_PASS', 'your_password');
+define('DB_USER', 'your_db_user');
+define('DB_PASS', 'your_db_password');
 ```
 
-### ۴. اجرا
+Adjust the timezone if needed (default is `Asia/Tehran`):
 
-فایل‌ها را روی وب‌سرور (Apache / Nginx) آپلود کنید.
+```php
+date_default_timezone_set('Asia/Tehran');
+```
 
-### ۵. ورود اول
+### 5. Deploy to your web server
 
-- **URL:** `http://your-server/wireguard-panel/`
-- **Username:** `admin`
-- **Password:** `admin123`
+Upload all files to your web server's document root or a subdirectory.
 
-> ⚠️ بلافاصله پس از ورود رمز عبور را تغییر دهید.
+**Apache** — make sure `mod_rewrite` is enabled and `AllowOverride All` is set.  
+**Nginx** — add a `try_files $uri $uri/ /index.php?$query_string;` rule.
+
+Protect sensitive directories by adding to your web server config (or `.htaccess`):
+
+```apache
+# .htaccess in project root
+<FilesMatch "\.(php)$">
+    # allow access only to the panel/ entry points
+</FilesMatch>
+
+# Block direct access to includes/ and lib/
+<DirectoryMatch "^.*(includes|lib)$">
+    Require all denied
+</DirectoryMatch>
+```
+
+### 6. First login
+
+| Field    | Value                                 |
+| -------- | ------------------------------------- |
+| URL      | `http://your-server/wireguard-panel/` |
+| Username | `admin`                               |
+| Password | `admin123`                            |
+
+> ⚠️ **Change the default password immediately** after your first login via the Settings page.
 
 ---
 
-## تنظیمات اولیه (صفحه Settings)
+## Settings Page
 
-| فیلد                   | توضیح                                    |
-| ---------------------- | ---------------------------------------- |
-| آدرس IP روتر           | IP داخلی میکروتیک (معمولاً ۱۹۲.۱۶۸.۸۸.۱) |
-| نام کاربری میکروتیک    | user با دسترسی API                       |
-| نام اینترفیس WireGuard | مثلاً `wireguard1`                       |
-| Public Key سرور        | کلید عمومی اینترفیس WireGuard روتر       |
-| Endpoint               | IP عمومی یا دامنه روتر برای کلاینت‌ها    |
+After logging in, go to **Settings** to connect the panel to your router.
+
+| Field               | Description                                                               |
+| ------------------- | ------------------------------------------------------------------------- |
+| Router IP           | Internal IP of the MikroTik (e.g. `192.168.88.1`)                         |
+| API Port            | RouterOS API port (default `8728`)                                        |
+| Username            | MikroTik user with API access                                             |
+| Password            | MikroTik user password                                                    |
+| WireGuard Interface | Interface name on the router (e.g. `wireguard1`)                          |
+| Server Public Key   | Public key of the WireGuard interface (from `/interface wireguard print`) |
+| Endpoint            | Public IP or domain + port clients will connect to (e.g. `1.2.3.4:51820`) |
+| DNS                 | DNS server pushed to clients (e.g. `1.1.1.1`)                             |
+| Subnet              | IP pool for peers (e.g. `10.0.0.0/24`)                                    |
+
+Use the **Test Connection** button to run a step-by-step diagnostic (TCP → login → WireGuard interface check).
 
 ---
 
