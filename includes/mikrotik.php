@@ -431,7 +431,12 @@ function mtGetAllPeerStats(string $wgInterface): array
             $out[$id] = [
                 'rx'             => (int)($row['rx'] ?? 0),
                 'tx'             => (int)($row['tx'] ?? 0),
-                'last-handshake' => $row['last-handshake-time'] ?? null,
+                'name' => $row['name'] ?? null,
+                'last-handshake' => $row['last-handshake'] ?? null,
+                'endpoint-address' => $row['endpoint-address'] ?? null,
+                'endpoint-port' => $row['endpoint-port'] ?? null,
+                'current-endpoint-address' => $row['current-endpoint-address'] ?? null,
+                'current-endpoint-port' => $row['current-endpoint-port'] ?? null,
             ];
         }
     }

@@ -36,9 +36,16 @@ try {
             $lh = null;
             $rawLh = $s['last-handshake'] ?? '';
             if (!empty($rawLh) && $rawLh !== 'never') {
-                // RouterOS returns ISO format: "2026-04-21 15:35:12"
-                if (preg_match('/^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}:\d{2}:\d{2})$/', $rawLh, $m)) {
-                    $lh = "{$m[1]}-{$m[2]}-{$m[3]} {$m[4]}";
+                // RouterOS returns duration ago: "36m58s", "1h5m30s", "2d3h", "1w2d" etc.
+                if (preg_match('/^(?:(\d+)w)?(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/', $rawLh, $m)) {
+                    $secs = ((int)($m[1] ?? 0) * 604800)
+                        + ((int)($m[2] ?? 0) * 86400)
+                        + ((int)($m[3] ?? 0) * 3600)
+                        + ((int)($m[4] ?? 0) * 60)
+                        + ((int)($m[5] ?? 0));
+                    if ($secs > 0) {
+                        $lh = date('Y-m-d H:i:s', time() - $secs);
+                    }
                 }
             }
             dbQuery(
