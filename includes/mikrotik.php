@@ -135,7 +135,7 @@ function generateKeypairLocally(): array
 
     throw new RuntimeException(
         'WireGuard keypair generation failed — no suitable method found on this server. ' .
-        'Install one of: php-sodium  |  wireguard-tools  |  openssl (CLI)'
+            'Install one of: php-sodium  |  wireguard-tools  |  openssl (CLI)'
     );
 }
 
@@ -161,8 +161,8 @@ function mtGenerateKeypair(): array
         }
         throw new RuntimeException(
             $localEx->getMessage() .
-            ' — Router API also unavailable. ' .
-            'Quick fix: run  apt install php-sodium && service php*-fpm restart'
+                ' — Router API also unavailable. ' .
+                'Quick fix: run  apt install php-sodium && service php*-fpm restart'
         );
     }
 }
