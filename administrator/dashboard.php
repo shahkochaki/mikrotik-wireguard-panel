@@ -164,7 +164,7 @@ include __DIR__ . '/../templates/header.php';
                     <small class="text-muted">CPU</small>
                     <small id="cpuPct"></small>
                 </div>
-                <div class="progress" style="height:8px">
+                <div class="progress" style="height:18px">
                     <div id="cpuBar" class="progress-bar bg-success" style="width:0%"></div>
                 </div>
             </div>
@@ -173,7 +173,7 @@ include __DIR__ . '/../templates/header.php';
                     <small class="text-muted">حافظه</small>
                     <small id="memPct"></small>
                 </div>
-                <div class="progress" style="height:8px">
+                <div class="progress" style="height:18px">
                     <div id="memBar" class="progress-bar bg-info" style="width:0%"></div>
                 </div>
             </div>
