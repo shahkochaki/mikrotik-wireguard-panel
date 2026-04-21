@@ -84,12 +84,12 @@ function langSwitcherHtml(): string
     foreach (LANG_SUPPORTED as $code => $info) {
         $active = ($code === $current) ? ' active' : '';
         $items .= '<li><a class="dropdown-item' . $active . '" href="?set_lang=' . $code . '">'
-                . htmlspecialchars($info['label']) . '</a></li>';
+            . htmlspecialchars($info['label']) . '</a></li>';
     }
     return '<div class="dropdown">'
-         . '<button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">'
-         . '<i class="fas fa-globe me-1"></i>' . htmlspecialchars($label)
-         . '</button>'
-         . '<ul class="dropdown-menu dropdown-menu-end">' . $items . '</ul>'
-         . '</div>';
+        . '<button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">'
+        . '<i class="fas fa-globe me-1"></i>' . htmlspecialchars($label)
+        . '</button>'
+        . '<ul class="dropdown-menu dropdown-menu-end">' . $items . '</ul>'
+        . '</div>';
 }

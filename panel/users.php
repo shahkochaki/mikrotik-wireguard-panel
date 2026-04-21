@@ -117,7 +117,7 @@ include __DIR__ . '/../templates/header.php';
                                 <td>
                                     <?php if ($u['expiry_date']): ?>
                                         <?= $expired
-                                    ? '<span class="badge bg-danger"><i class="fas fa-ban me-1"></i>' . __('expired') . '</span>'
+                                            ? '<span class="badge bg-danger"><i class="fas fa-ban me-1"></i>' . __('expired') . '</span>'
                                             : '<span class="badge bg-success">' . e(date('Y-m-d', strtotime($u['expiry_date']))) . '</span>'
                                         ?>
                                     <?php else: ?>
