@@ -7,7 +7,7 @@ require_once __DIR__ . '/../includes/mikrotik.php';
 
 requireLogin();
 
-$pageTitle = 'داشبورد';
+$pageTitle = __('page_dashboard');
 
 // Stats
 $totalUsers   = countUsers();
@@ -37,7 +37,7 @@ include __DIR__ . '/../templates/header.php';
                     </div>
                     <div class="ms-3">
                         <div class="stat-value"><?= $totalUsers ?></div>
-                        <div class="stat-label">کل کاربران</div>
+                        <div class="stat-label"><?= __('stat_total_users') ?></div>
                     </div>
                 </div>
             </div>
@@ -52,7 +52,7 @@ include __DIR__ . '/../templates/header.php';
                     </div>
                     <div class="ms-3">
                         <div class="stat-value"><?= $activeUsers ?></div>
-                        <div class="stat-label">کاربران فعال</div>
+                        <div class="stat-label"><?= __('stat_active_users') ?></div>
                     </div>
                 </div>
             </div>
@@ -67,7 +67,7 @@ include __DIR__ . '/../templates/header.php';
                     </div>
                     <div class="ms-3">
                         <div class="stat-value"><?= $expiredUsers ?></div>
-                        <div class="stat-label">منقضی شده</div>
+                        <div class="stat-label"><?= __('stat_expired_users') ?></div>
                     </div>
                 </div>
             </div>
@@ -84,7 +84,7 @@ include __DIR__ . '/../templates/header.php';
                         <div class="stat-value" id="routerIdentity" style="font-size:.95rem">
                             <span class="spinner-border spinner-border-sm text-secondary"></span>
                         </div>
-                        <div class="stat-label">روتر میکروتیک</div>
+                        <div class="stat-label"><?= __('stat_router') ?></div>
                     </div>
                 </div>
             </div>
@@ -122,14 +122,14 @@ include __DIR__ . '/../templates/header.php';
                         (d.mem_percent > 80 ? 'bg-danger' : d.mem_percent > 60 ? 'bg-warning' : 'bg-info');
                     document.getElementById('routerStatsPanel').style.display = 'block';
                 } else {
-                    el.innerHTML = '<span class="text-danger" style="font-size:.8rem"><i class="fas fa-triangle-exclamation me-1"></i>قطع</span>';
+                    el.innerHTML = '<span class="text-danger" style="font-size:.8rem"><i class="fas fa-triangle-exclamation me-1"></i><?= __('disconnected') ?></span>';
                     card.querySelector('.stat-icon').classList.replace('bg-info-subtle', 'bg-danger-subtle');
                     card.querySelector('.stat-icon').classList.replace('text-info', 'text-danger');
                 }
             })
             .catch(() => {
                 document.getElementById('routerIdentity').innerHTML =
-                    '<span class="text-secondary" style="font-size:.8rem">نامشخص</span>';
+                    '<span class="text-secondary" style="font-size:.8rem"><?= __('unknown') ?></span>';
             });
     })();
 </script>
@@ -137,24 +137,24 @@ include __DIR__ . '/../templates/header.php';
 <!-- Router stats panel (hidden until loaded) -->
 <div id="routerStatsPanel" class="card border-0 shadow-sm mb-4" style="display:none">
     <div class="card-header bg-transparent">
-        <h6 class="mb-0 fw-semibold"><i class="fas fa-microchip me-2"></i>اطلاعات روتر</h6>
+        <h6 class="mb-0 fw-semibold"><i class="fas fa-microchip me-2"></i><?= __('router_info_title') ?></h6>
     </div>
     <div class="card-body">
         <div class="row g-3 mb-3">
             <div class="col-6 col-md-3">
-                <div class="text-muted small">نام روتر</div>
+                <div class="text-muted small"><?= __('router_board') ?></div>
                 <div class="fw-semibold" id="routerBoard">—</div>
             </div>
             <div class="col-6 col-md-3">
-                <div class="text-muted small">نسخه RouterOS</div>
+                <div class="text-muted small"><?= __('router_version') ?></div>
                 <div class="fw-semibold" id="routerVersion">—</div>
             </div>
             <div class="col-6 col-md-3">
-                <div class="text-muted small">آپتایم</div>
+                <div class="text-muted small"><?= __('router_uptime') ?></div>
                 <div class="fw-semibold" id="routerUptime">—</div>
             </div>
             <div class="col-6 col-md-3">
-                <div class="text-muted small">تعداد پیر WireGuard</div>
+                <div class="text-muted small"><?= __('router_peers') ?></div>
                 <div class="fw-semibold" id="routerPeers">—</div>
             </div>
         </div>
@@ -184,27 +184,27 @@ include __DIR__ . '/../templates/header.php';
 <!-- Recent users table -->
 <div class="card border-0 shadow-sm">
     <div class="card-header bg-transparent d-flex align-items-center justify-content-between">
-        <h6 class="mb-0 fw-semibold"><i class="fas fa-list me-2"></i>آخرین کاربران اضافه شده</h6>
-        <a href="users" class="btn btn-sm btn-outline-primary">مشاهده همه</a>
+        <h6 class="mb-0 fw-semibold"><i class="fas fa-list me-2"></i><?= __('recent_users_title') ?></h6>
+        <a href="users" class="btn btn-sm btn-outline-primary"><?= __('view_all') ?></a>
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th>نام</th>
-                        <th>آدرس IP</th>
-                        <th>سرعت</th>
-                        <th>انقضا</th>
-                        <th>وضعیت</th>
-                        <th>عملیات</th>
+                        <th><?= __('col_name') ?></th>
+                        <th><?= __('col_ip') ?></th>
+                        <th><?= __('col_speed') ?></th>
+                        <th><?= __('col_expiry') ?></th>
+                        <th><?= __('col_status') ?></th>
+                        <th><?= __('col_actions') ?></th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($recentUsers)): ?>
                         <tr>
                             <td colspan="6" class="text-center text-muted py-4">
-                                کاربری ثبت نشده است.
+                                <?= __('no_users_yet') ?>
                             </td>
                         </tr>
                     <?php else: ?>
@@ -225,17 +225,17 @@ include __DIR__ . '/../templates/header.php';
                                 <td>
                                     <?php if ($u['expiry_date']): ?>
                                         <?= $expired
-                                            ? '<span class="badge bg-danger">منقضی</span>'
+                                            ? '<span class="badge bg-danger">' . __('expired') . '</span>'
                                             : '<span class="badge bg-success">' . e(date('Y-m-d', strtotime($u['expiry_date']))) . '</span>'
                                         ?>
                                     <?php else: ?>
-                                        <span class="badge bg-secondary">بدون محدودیت</span>
+                                        <span class="badge bg-secondary"><?= __('no_expiry') ?></span>
                                     <?php endif; ?>
                                 </td>
                                 <td>
                                     <?= $u['is_active']
-                                        ? '<span class="badge bg-success">فعال</span>'
-                                        : '<span class="badge bg-secondary">غیرفعال</span>'
+                                        ? '<span class="badge bg-success">' . __('active') . '</span>'
+                                        : '<span class="badge bg-secondary">' . __('inactive') . '</span>'
                                     ?>
                                 </td>
                                 <td>

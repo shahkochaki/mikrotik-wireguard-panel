@@ -7,12 +7,12 @@ require_once __DIR__ . '/../includes/mikrotik.php';
 
 requireLogin();
 
-$pageTitle = 'افزودن کاربر جدید';
+$pageTitle = __('page_add_user');
 $errors    = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!validateCsrf()) {
-        die('درخواست نامعتبر');
+        die(__('invalid_request'));
     }
 
     $name          = postStr('name');
@@ -25,20 +25,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $notes         = postStr('notes');
 
     // --- Validation ---
-    if (!$name)     $errors[] = 'نام نمایشی الزامی است.';
-    if (!$username) $errors[] = 'نام کاربری الزامی است.';
+    if (!$name)     $errors[] = __('err_name_required');
+    if (!$username) $errors[] = __('err_username_required');
     if (!preg_match('/^[a-zA-Z0-9_\-]+$/', $username)) {
-        $errors[] = 'نام کاربری فقط می‌تواند شامل حروف انگلیسی، اعداد، - و _ باشد.';
+        $errors[] = __('err_username_invalid');
     }
     if (dbQuery('SELECT id FROM wg_users WHERE username = ?', [$username])->fetch()) {
-        $errors[] = 'این نام کاربری قبلاً ثبت شده است.';
+        $errors[] = __('err_username_taken');
     }
 
     $expiry = null;
     if ($expiryDate) {
         $expiry = date('Y-m-d 23:59:59', strtotime($expiryDate));
         if (!$expiry) {
-            $errors[] = 'تاریخ انقضای نامعتبر.';
+            $errors[] = __('err_expiry_invalid');
         }
     }
 
@@ -83,11 +83,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]
             );
 
-            flashSet('success', "کاربر «{$name}» با موفقیت ایجاد شد.");
+            flashSet('success', __('flash_user_created', ['name' => $name]));
             header('Location: users');
             exit;
         } catch (Throwable $e) {
-            $errors[] = 'خطا در ارتباط با میکروتیک: ' . $e->getMessage();
+            $errors[] = __('err_mikrotik') . $e->getMessage();
         }
     }
 }
@@ -98,7 +98,7 @@ include __DIR__ . '/../templates/header.php';
 
 <?php if ($errors): ?>
     <div class="alert alert-danger">
-        <strong>خطاها:</strong>
+        <strong><?= __('errors_title') ?></strong>
         <ul class="mb-0 mt-1">
             <?php foreach ($errors as $err): ?>
                 <li><?= e($err) ?></li>
@@ -109,7 +109,7 @@ include __DIR__ . '/../templates/header.php';
 
 <div class="card border-0 shadow-sm" style="max-width:700px">
     <div class="card-header bg-transparent">
-        <h6 class="mb-0 fw-semibold"><i class="fas fa-user-plus me-2"></i>اطلاعات کاربر جدید</h6>
+        <h6 class="mb-0 fw-semibold"><i class="fas fa-user-plus me-2"></i><?= __('page_add_user') ?></h6>
     </div>
     <div class="card-body">
         <form method="POST" action="" novalidate>
@@ -117,19 +117,19 @@ include __DIR__ . '/../templates/header.php';
 
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="form-label">نام نمایشی <span class="text-danger">*</span></label>
+                    <label class="form-label"><?= __('lbl_display_name') ?> <span class="text-danger">*</span></label>
                     <input type="text" name="name" class="form-control"
                         value="<?= postStr('name') ?>" placeholder="علی محمدی" required>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">نام کاربری <span class="text-danger">*</span></label>
+                    <label class="form-label"><?= __('lbl_username') ?> <span class="text-danger">*</span></label>
                     <input type="text" name="username" class="form-control" dir="ltr"
                         value="<?= postStr('username') ?>" placeholder="ali_mohammadi" required>
-                    <div class="form-text">فقط حروف انگلیسی، عدد، - و _</div>
+                    <div class="form-text"><?= __('hint_username') ?></div>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">
-                        <i class="fas fa-arrow-down text-success me-1"></i>سرعت دانلود
+                        <i class="fas fa-arrow-down text-success me-1"></i><?= __('lbl_download_speed') ?>
                     </label>
                     <select name="download_speed" class="form-select">
                         <?php foreach ($speedOptions as $val => $label): ?>
@@ -141,7 +141,7 @@ include __DIR__ . '/../templates/header.php';
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">
-                        <i class="fas fa-arrow-up text-primary me-1"></i>سرعت آپلود
+                        <i class="fas fa-arrow-up text-primary me-1"></i><?= __('lbl_upload_speed') ?>
                     </label>
                     <select name="upload_speed" class="form-select">
                         <?php foreach ($speedOptions as $val => $label): ?>
@@ -153,33 +153,33 @@ include __DIR__ . '/../templates/header.php';
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">
-                        <i class="fas fa-calendar me-1"></i>تاریخ انقضا
+                        <i class="fas fa-calendar me-1"></i><?= __('lbl_expiry_date') ?>
                     </label>
                     <input type="date" name="expiry_date" class="form-control" dir="ltr"
                         value="<?= postStr('expiry_date') ?>">
-                    <div class="form-text">خالی = بدون محدودیت زمانی</div>
+                    <div class="form-text"><?= __('hint_expiry_empty') ?></div>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">
-                        <i class="fas fa-database me-1"></i>حجم مجاز (GB)
+                        <i class="fas fa-database me-1"></i><?= __('lbl_data_limit') ?>
                     </label>
                     <input type="number" name="data_limit_gb" class="form-control" dir="ltr"
                         min="0.1" step="0.1"
                         value="<?= htmlspecialchars(postStr('data_limit_gb')) ?>">
-                    <div class="form-text">خالی = بدون محدودیت حجمی</div>
+                    <div class="form-text"><?= __('hint_data_empty') ?></div>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">یادداشت</label>
+                    <label class="form-label"><?= __('lbl_notes') ?></label>
                     <input type="text" name="notes" class="form-control"
-                        value="<?= postStr('notes') ?>" placeholder="اختیاری">
+                        value="<?= postStr('notes') ?>" placeholder="<?= __('optional') ?>">
                 </div>
             </div>
 
             <div class="d-flex gap-2 mt-4">
                 <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-check me-2"></i>ایجاد کاربر
+                    <i class="fas fa-check me-2"></i><?= __('btn_create_user') ?>
                 </button>
-                <a href="users" class="btn btn-outline-secondary">انصراف</a>
+                <a href="users" class="btn btn-outline-secondary"><?= __('cancel') ?></a>
             </div>
         </form>
     </div>

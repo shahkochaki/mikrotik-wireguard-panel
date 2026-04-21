@@ -6,7 +6,7 @@ require_once __DIR__ . '/../includes/functions.php';
 
 requireLogin();
 
-$pageTitle = 'مدیریت کاربران';
+$pageTitle = __('page_users');
 
 // Handle bulk expiry check
 $expiredUpdated = 0;
@@ -30,7 +30,7 @@ if (isset($_GET['check_expiry']) && $_GET['check_expiry'] === '1') {
         } catch (Throwable $e) { /* ignore per-user errors */
         }
     }
-    flashSet('info', "بررسی انقضا انجام شد. {$expiredUpdated} کاربر غیرفعال شد.");
+    flashSet('info', __('expiry_check_done', ['n' => $expiredUpdated]));
     header('Location: users');
     exit;
 }
@@ -44,17 +44,17 @@ include __DIR__ . '/../templates/header.php';
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <span class="badge bg-secondary me-2"><?= count($users) ?> کاربر</span>
+        <span class="badge bg-secondary me-2"><?= count($users) ?> <?= __('lbl_username') === 'Username' ? 'users' : 'کاربر' ?></span>
     </div>
     <div class="d-flex gap-2">
         <a href="users?check_expiry=1" class="btn btn-outline-warning btn-sm">
-            <i class="fas fa-clock me-1"></i>بررسی انقضا
+            <i class="fas fa-clock me-1"></i><?= __('btn_check_expiry') ?>
         </a>
         <a href="user_import" class="btn btn-outline-info btn-sm">
-            <i class="fas fa-file-import me-1"></i>ایمپورت از روتر
+            <i class="fas fa-file-import me-1"></i><?= __('btn_import') ?>
         </a>
         <a href="user_add" class="btn btn-primary btn-sm">
-            <i class="fas fa-user-plus me-1"></i>افزودن کاربر
+            <i class="fas fa-user-plus me-1"></i><?= __('btn_add_user') ?>
         </a>
     </div>
 </div>
@@ -66,14 +66,14 @@ include __DIR__ . '/../templates/header.php';
                 <thead class="table-light">
                     <tr>
                         <th>#</th>
-                        <th>نام / یوزرنیم</th>
-                        <th>آدرس IP</th>
-                        <th>دانلود</th>
-                        <th>آپلود</th>
-                        <th>حجم مصرفی</th>
-                        <th>تاریخ انقضا</th>
-                        <th>وضعیت</th>
-                        <th>عملیات</th>
+                        <th><?= __('col_name') ?> / <?= __('col_username') ?></th>
+                        <th><?= __('col_ip') ?></th>
+                        <th><?= __('col_download') ?></th>
+                        <th><?= __('col_upload') ?></th>
+                        <th><?= __('col_usage') ?></th>
+                        <th><?= __('col_expiry') ?></th>
+                        <th><?= __('col_status') ?></th>
+                        <th><?= __('col_actions') ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -81,8 +81,8 @@ include __DIR__ . '/../templates/header.php';
                         <tr>
                             <td colspan="9" class="text-center text-muted py-5">
                                 <i class="fas fa-users fa-2x d-block mb-2"></i>
-                                هیچ کاربری ثبت نشده است.
-                                <a href="user_add" class="d-block mt-2">افزودن اولین کاربر</a>
+                                <?= __('no_users_registered') ?>
+                                <a href="user_add" class="d-block mt-2"><?= __('add_first_user') ?></a>
                             </td>
                         </tr>
                     <?php else: ?>
@@ -117,34 +117,34 @@ include __DIR__ . '/../templates/header.php';
                                 <td>
                                     <?php if ($u['expiry_date']): ?>
                                         <?= $expired
-                                            ? '<span class="badge bg-danger"><i class="fas fa-ban me-1"></i>منقضی</span>'
+                                    ? '<span class="badge bg-danger"><i class="fas fa-ban me-1"></i>' . __('expired') . '</span>'
                                             : '<span class="badge bg-success">' . e(date('Y-m-d', strtotime($u['expiry_date']))) . '</span>'
                                         ?>
                                     <?php else: ?>
-                                        <span class="badge bg-secondary">نامحدود</span>
+                                        <span class="badge bg-secondary"><?= __('unlimited') ?></span>
                                     <?php endif; ?>
                                 </td>
                                 <td class="status-cell">
                                     <?= $u['is_active']
-                                        ? '<span class="badge bg-success">فعال</span>'
-                                        : '<span class="badge bg-secondary">غیرفعال</span>'
+                                        ? '<span class="badge bg-success">' . __('active') . '</span>'
+                                        : '<span class="badge bg-secondary">' . __('inactive') . '</span>'
                                     ?>
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
                                         <a href="user_config?id=<?= $u['id'] ?>"
-                                            class="btn btn-outline-info" title="دانلود کانفیگ">
+                                            class="btn btn-outline-info" title="<?= __('btn_download_config') ?>">
                                             <i class="fas fa-download"></i>
                                         </a>
                                         <a href="user_edit?id=<?= $u['id'] ?>"
-                                            class="btn btn-outline-secondary" title="ویرایش">
+                                            class="btn btn-outline-secondary" title="<?= __('edit') ?>">
                                             <i class="fas fa-pen"></i>
                                         </a>
                                         <button type="button"
                                             class="btn <?= $u['is_active'] ? 'btn-outline-warning' : 'btn-outline-success' ?> btn-ajax-toggle"
                                             data-id="<?= $u['id'] ?>"
                                             data-active="<?= $u['is_active'] ?>"
-                                            title="<?= $u['is_active'] ? 'غیرفعال کردن' : 'فعال کردن' ?>">
+                                            title="<?= $u['is_active'] ? __('btn_disable') : __('btn_enable') ?>">
                                             <i class="fas <?= $u['is_active'] ? 'fa-pause' : 'fa-play' ?>"></i>
                                         </button>
                                         <button type="button"

@@ -7,7 +7,7 @@ require_once __DIR__ . '/../includes/mikrotik.php';
 
 requireLogin();
 
-$pageTitle = 'تنظیمات';
+$pageTitle = __('page_settings');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!validateCsrf()) die('درخواست نامعتبر');
@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // فقط ذخیره کن و redirect بده — تست اتصال از طریق AJAX انجام می‌شه
-    flashSet('success', 'تنظیمات با موفقیت ذخیره شد.');
+    flashSet('success', __('flash_settings_saved'));
     header('Location: settings');
     exit;
 }
@@ -53,29 +53,29 @@ include __DIR__ . '/../templates/header.php';
         <div class="col-lg-6">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-header bg-transparent">
-                    <h6 class="mb-0 fw-semibold"><i class="fas fa-router me-2"></i>تنظیمات میکروتیک</h6>
+                    <h6 class="mb-0 fw-semibold"><i class="fas fa-router me-2"></i><?= __('card_mikrotik') ?></h6>
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label class="form-label">آدرس IP روتر</label>
+                        <label class="form-label"><?= __('lbl_router_ip') ?></label>
                         <input type="text" name="mt_host" class="form-control" dir="ltr"
                             value="<?= e($s['mt_host'] ?? '192.168.88.1') ?>">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">پورت API (پیش‌فرض 8728)</label>
+                        <label class="form-label"><?= __('lbl_api_port') ?></label>
                         <input type="number" name="mt_port" class="form-control" dir="ltr"
                             value="<?= e($s['mt_port'] ?? '8728') ?>">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">نام کاربری میکروتیک</label>
+                        <label class="form-label"><?= __('lbl_mt_user') ?></label>
                         <input type="text" name="mt_user" class="form-control" dir="ltr"
                             value="<?= e($s['mt_user'] ?? 'admin') ?>" autocomplete="off">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">رمز عبور میکروتیک</label>
+                        <label class="form-label"><?= __('lbl_mt_pass') ?></label>
                         <input type="password" name="mt_pass" class="form-control" dir="ltr"
                             value="<?= e($s['mt_pass'] ?? '') ?>" autocomplete="new-password">
-                        <div class="form-text">خالی = بدون رمز</div>
+                        <div class="form-text"><?= __('hint_pass_empty') ?></div>
                     </div>
                 </div>
             </div>
@@ -85,48 +85,48 @@ include __DIR__ . '/../templates/header.php';
         <div class="col-lg-6">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-header bg-transparent">
-                    <h6 class="mb-0 fw-semibold"><i class="fas fa-shield-halved me-2"></i>تنظیمات WireGuard</h6>
+                    <h6 class="mb-0 fw-semibold"><i class="fas fa-shield-halved me-2"></i><?= __('card_wireguard') ?></h6>
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label class="form-label">نام اینترفیس WireGuard</label>
+                        <label class="form-label"><?= __('lbl_wg_interface') ?></label>
                         <input type="text" name="wg_interface" class="form-control" dir="ltr"
                             value="<?= e($s['wg_interface'] ?? 'wireguard1') ?>">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Public Key سرور</label>
+                        <label class="form-label"><?= __('lbl_server_pubkey') ?></label>
                         <input type="text" name="wg_server_public_key" class="form-control" dir="ltr"
                             value="<?= e($s['wg_server_public_key'] ?? '') ?>"
-                            placeholder="کلید عمومی اینترفیس wireguard روتر">
+                            placeholder="<?= __('hint_server_pubkey') ?>">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Endpoint (IP یا دامنه عمومی روتر)</label>
+                        <label class="form-label"><?= __('lbl_endpoint') ?></label>
                         <input type="text" name="wg_endpoint" class="form-control" dir="ltr"
                             value="<?= e($s['wg_endpoint'] ?? '') ?>" placeholder="1.2.3.4">
                     </div>
                     <div class="row g-2">
                         <div class="col-6">
-                            <label class="form-label">پورت WireGuard</label>
+                            <label class="form-label"><?= __('lbl_listen_port') ?></label>
                             <input type="number" name="wg_listen_port" class="form-control" dir="ltr"
                                 value="<?= e($s['wg_listen_port'] ?? '13231') ?>">
                         </div>
                         <div class="col-6">
-                            <label class="form-label">DNS</label>
+                            <label class="form-label"><?= __('lbl_dns') ?></label>
                             <input type="text" name="wg_dns" class="form-control" dir="ltr"
                                 value="<?= e($s['wg_dns'] ?? '8.8.8.8') ?>">
                         </div>
                         <div class="col-6">
-                            <label class="form-label">Subnet (مثلاً 10.0.0.0/24)</label>
+                            <label class="form-label"><?= __('lbl_subnet') ?></label>
                             <input type="text" name="wg_subnet" class="form-control" dir="ltr"
                                 value="<?= e($s['wg_subnet'] ?? '10.0.0.0/24') ?>">
                         </div>
                         <div class="col-6">
-                            <label class="form-label">IP سرور</label>
+                            <label class="form-label"><?= __('lbl_server_ip') ?></label>
                             <input type="text" name="wg_server_ip" class="form-control" dir="ltr"
                                 value="<?= e($s['wg_server_ip'] ?? '10.0.0.1') ?>">
                         </div>
                         <div class="col-12">
-                            <label class="form-label">AllowedIPs در کانفیگ کلاینت</label>
+                            <label class="form-label"><?= __('lbl_allowed_ips') ?></label>
                             <input type="text" name="wg_allowed_ips" class="form-control" dir="ltr"
                                 value="<?= e($s['wg_allowed_ips'] ?? '0.0.0.0/0') ?>">
                         </div>
@@ -138,10 +138,10 @@ include __DIR__ . '/../templates/header.php';
 
     <div class="mt-4 d-flex gap-2 flex-wrap">
         <button type="submit" class="btn btn-primary">
-            <i class="fas fa-save me-2"></i>ذخیره تنظیمات
+            <i class="fas fa-save me-2"></i><?= __('btn_save_settings') ?>
         </button>
         <button type="button" class="btn btn-outline-info" id="btnTestConn">
-            <i class="fas fa-plug me-2"></i>تست اتصال
+            <i class="fas fa-plug me-2"></i><?= __('btn_test_connection') ?>
         </button>
     </div>
 </form>
@@ -149,7 +149,7 @@ include __DIR__ . '/../templates/header.php';
 <!-- Connection test result panel -->
 <div id="connTestPanel" class="card border-0 shadow-sm mt-4" style="display:none">
     <div class="card-header bg-transparent d-flex align-items-center gap-2">
-        <h6 class="mb-0 fw-semibold"><i class="fas fa-stethoscope me-2"></i>نتیجه تست اتصال</h6>
+        <h6 class="mb-0 fw-semibold"><i class="fas fa-stethoscope me-2"></i><?= __('btn_test_connection') ?></h6>
         <div id="connTestSpinner" class="spinner-border spinner-border-sm text-primary" style="display:none"></div>
     </div>
     <div class="card-body p-0">

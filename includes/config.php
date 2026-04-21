@@ -43,3 +43,7 @@ unset($_bScheme, $_bHost, $_bDocR, $_bAppR, $_bPath);
 
 // --- Timezone ---
 date_default_timezone_set('Asia/Tehran');
+
+// --- i18n ---
+require_once __DIR__ . '/lang.php';
+loadLang();
