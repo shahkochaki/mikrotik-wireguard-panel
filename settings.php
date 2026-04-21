@@ -8,7 +8,6 @@ require_once __DIR__ . '/includes/mikrotik.php';
 requireLogin();
 
 $pageTitle = 'تنظیمات';
-$errors    = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!validateCsrf()) die('درخواست نامعتبر');
@@ -34,15 +33,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Test connection
-    $identity = mtGetIdentity();
-    if (str_starts_with($identity, 'Error:')) {
-        $errors[] = 'تنظیمات ذخیره شد اما اتصال به میکروتیک ناموفق بود: ' . $identity;
-    } else {
-        flashSet('success', 'تنظیمات ذخیره شد. روتر: ' . $identity);
-        header('Location: settings.php');
-        exit;
-    }
+    // فقط ذخیره کن و redirect بده — تست اتصال از طریق AJAX انجام می‌شه
+    flashSet('success', 'تنظیمات با موفقیت ذخیره شد.');
+    header('Location: settings.php');
+    exit;
 }
 
 $s = getAllSettings();
@@ -50,11 +44,6 @@ include __DIR__ . '/templates/header.php';
 ?>
 
 <?= flashHtml() ?>
-<?php if ($errors): ?>
-    <div class="alert alert-warning">
-        <ul class="mb-0"><?php foreach ($errors as $e) echo '<li>' . htmlspecialchars($e) . '</li>'; ?></ul>
-    </div>
-<?php endif; ?>
 
 <form method="POST" action="" novalidate>
     <?= csrfField() ?>
