@@ -11,10 +11,10 @@ if (PHP_SAPI !== 'cli') {
     die('CLI only');
 }
 
-require_once __DIR__ . '/includes/config.php';
-require_once __DIR__ . '/includes/db.php';
-require_once __DIR__ . '/includes/functions.php';
-require_once __DIR__ . '/includes/mikrotik.php';
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/mikrotik.php';
 
 $now = date('Y-m-d H:i:s');
 echo "[{$now}] WireGuard cron started\n";
