@@ -26,43 +26,145 @@ function mtConnect(): RouterosAPI
 // ----------------------------------------------------------------
 
 /**
- * Generate a WireGuard keypair locally using PHP's libsodium (Curve25519).
- * No router connection needed. PHP 7.2+ has sodium bundled.
+ * Generate a WireGuard Curve25519 keypair using the best available method:
+ *
+ *   1. PHP sodium extension  (php-sodium / libsodium — fastest)
+ *   2. `wg genkey` CLI       (wireguard-tools on the web server)
+ *   3. `openssl genpkey` CLI (OpenSSL binary — almost always present)
+ *   4. PHP openssl extension with X25519 curve (PHP 8.0+ / OpenSSL 1.1+)
+ *   5. Router API            (RouterOS 7.x — last resort, requires live connection)
+ *
+ * Throws RuntimeException only when every method fails.
  */
 function generateKeypairLocally(): array
 {
-    $private = random_bytes(32);
-    // Clamp the private key per Curve25519 spec
-    $private[0]  = chr(ord($private[0])  & 248);
-    $private[31] = chr((ord($private[31]) & 127) | 64);
-    $public = sodium_crypto_scalarmult_base($private);
-    return [
-        'private-key' => base64_encode($private),
-        'public-key'  => base64_encode($public),
-    ];
+    // ── Method 1: PHP sodium ────────────────────────────────────────
+    if (function_exists('sodium_crypto_scalarmult_base')) {
+        $priv    = random_bytes(32);
+        $priv[0]  = chr(ord($priv[0])  & 248);
+        $priv[31] = chr((ord($priv[31]) & 127) | 64);
+        return [
+            'private-key' => base64_encode($priv),
+            'public-key'  => base64_encode(sodium_crypto_scalarmult_base($priv)),
+        ];
+    }
+
+    // Helper: check if a shell function is actually callable
+    $shellOk = function_exists('exec')
+        && !in_array('exec', array_map('trim', explode(',', (string) ini_get('disable_functions'))));
+
+    // ── Method 2: wg CLI ────────────────────────────────────────────
+    if ($shellOk) {
+        exec('wg genkey 2>/dev/null', $wgOut, $wgRc);
+        if ($wgRc === 0 && !empty($wgOut[0])) {
+            $priv = trim($wgOut[0]);
+            exec('printf %s ' . escapeshellarg($priv) . ' | wg pubkey 2>/dev/null', $pkOut, $pkRc);
+            if ($pkRc === 0 && !empty($pkOut[0])) {
+                return ['private-key' => $priv, 'public-key' => trim($pkOut[0])];
+            }
+        }
+    }
+
+    // ── Method 3: openssl CLI + DER parsing ─────────────────────────
+    // PKCS8 X25519 DER layout (48 bytes total):
+    //   30 2e 02 01 00 30 05 06 03 [2b 65 6e] 04 22 04 20 [32-byte privkey]
+    //   offset 0                               8  9  10     16            47
+    // SubjectPublicKeyInfo DER layout (44 bytes total):
+    //   30 2a 30 05 06 03 [2b 65 6e] 03 21 00 [32-byte pubkey]
+    //   offset 0           4  5  6    9  10 11 12            43
+    if ($shellOk && function_exists('proc_open')) {
+        exec('openssl genpkey -algorithm X25519 2>/dev/null', $pemLines, $opensslRc);
+        if ($opensslRc === 0 && count($pemLines) > 2) {
+            $privPem = implode("\n", $pemLines);
+            $privDer = base64_decode(preg_replace('/-----[^-]+-----|[\r\n\s]/', '', $privPem));
+
+            // Validate X25519 OID (2b 65 6e) at offset 8
+            if (strlen($privDer) >= 48 && substr($privDer, 8, 3) === "\x2b\x65\x6e") {
+                $rawPriv = substr($privDer, 16, 32);
+
+                // Pipe private key into `openssl pkey -pubout` to get public key
+                $desc = [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
+                $ph   = proc_open('openssl pkey -pubout 2>/dev/null', $desc, $pipes);
+                if (is_resource($ph)) {
+                    fwrite($pipes[0], $privPem);
+                    fclose($pipes[0]);
+                    $pubPem = stream_get_contents($pipes[1]);
+                    fclose($pipes[1]);
+                    fclose($pipes[2]);
+                    proc_close($ph);
+
+                    $pubDer = base64_decode(preg_replace('/-----[^-]+-----|[\r\n\s]/', '', $pubPem));
+                    // Validate X25519 OID at offset 4
+                    if (strlen($pubDer) >= 44 && substr($pubDer, 4, 3) === "\x2b\x65\x6e") {
+                        $rawPub = substr($pubDer, 12, 32);
+                        if (strlen($rawPriv) === 32 && strlen($rawPub) === 32) {
+                            return [
+                                'private-key' => base64_encode($rawPriv),
+                                'public-key'  => base64_encode($rawPub),
+                            ];
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // ── Method 4: PHP openssl extension (PHP 8.0+ / OpenSSL 1.1+) ──
+    if (function_exists('openssl_pkey_new')) {
+        $res = @openssl_pkey_new([
+            'private_key_type' => OPENSSL_KEYTYPE_EC,
+            'curve_name'       => 'X25519',
+        ]);
+        if ($res !== false) {
+            openssl_pkey_export($res, $privPem);
+            $det     = openssl_pkey_get_details($res);
+            $privDer = base64_decode(preg_replace('/-----[^-]+-----|[\r\n\s]/', '', $privPem));
+            $pubDer  = base64_decode(preg_replace('/-----[^-]+-----|[\r\n\s]/', '', $det['key'] ?? ''));
+            if (strlen($privDer) >= 48 && strlen($pubDer) >= 44) {
+                $rawPriv = substr($privDer, 16, 32);
+                $rawPub  = substr($pubDer,  12, 32);
+                if (strlen($rawPriv) === 32 && strlen($rawPub) === 32) {
+                    return [
+                        'private-key' => base64_encode($rawPriv),
+                        'public-key'  => base64_encode($rawPub),
+                    ];
+                }
+            }
+        }
+    }
+
+    throw new RuntimeException(
+        'WireGuard keypair generation failed — no suitable method found on this server. ' .
+        'Install one of: php-sodium  |  wireguard-tools  |  openssl (CLI)'
+    );
 }
 
 /**
- * Generate a WireGuard keypair.
- * Uses local PHP/sodium generation (no router connection needed).
- * Falls back to router API only if sodium extension is unavailable.
+ * Generate a WireGuard keypair (public entry point).
+ * Tries local generation first; falls back to router API as last resort.
  */
 function mtGenerateKeypair(): array
 {
-    // Prefer local generation — fast, zero router dependency
-    if (function_exists('sodium_crypto_scalarmult_base')) {
+    try {
         return generateKeypairLocally();
-    }
-    // Fallback: ask the router (RouterOS 7.x only)
-    $api  = mtConnect();
-    $rows = $api->comm('/interface/wireguard/generate-keypair');
-    $api->disconnect();
-    if ($rows === false || empty($rows)) {
+    } catch (RuntimeException $localEx) {
+        // Last-resort: ask the router (RouterOS 7.x +generate-keypair command)
+        try {
+            $api  = mtConnect();
+            $rows = $api->comm('/interface/wireguard/generate-keypair');
+            $api->disconnect();
+            if (!empty($rows[0]['public-key'])) {
+                return $rows[0];
+            }
+        } catch (Throwable $routerEx) {
+            // fall through to re-throw the original local error
+        }
         throw new RuntimeException(
-            'Failed to generate keypair — PHP sodium extension not available and router returned no data'
+            $localEx->getMessage() .
+            ' — Router API also unavailable. ' .
+            'Quick fix: run  apt install php-sodium && service php*-fpm restart'
         );
     }
-    return $rows[0];
 }
 
 /**
