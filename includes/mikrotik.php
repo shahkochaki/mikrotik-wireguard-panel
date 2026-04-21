@@ -197,13 +197,36 @@ function generateKeypairLocally(): array
         }
     }
 
-    // ── Method 4: PHP openssl extension (PHP 8.0+ / OpenSSL 1.1+) ──
+    // ── Method 4: Pure PHP + GMP (works on any PHP that has gmp extension) ─
+    // GMP ships compiled into most Linux/cPanel/Plesk PHP builds by default.
+    if (function_exists('gmp_init')) {
+        $rawPriv     = random_bytes(32);
+        $rawPriv[0]  = chr(ord($rawPriv[0])  & 248);
+        $rawPriv[31] = chr((ord($rawPriv[31]) & 127) | 64);
+        $basePoint   = "\x09" . str_repeat("\x00", 31); // u = 9 little-endian
+        $rawPub      = _x25519_gmp($rawPriv, $basePoint);
+        if ($rawPub !== null && strlen($rawPub) === 32) {
+            return [
+                'private-key' => base64_encode($rawPriv),
+                'public-key'  => base64_encode($rawPub),
+            ];
+        }
+    }
+
+    // ── Method 5: PHP openssl extension (PHP 8.1+ / OpenSSL 1.1+) ──────────
     if (function_exists('openssl_pkey_new')) {
-        $res = @openssl_pkey_new([
-            'private_key_type' => OPENSSL_KEYTYPE_EC,
-            'curve_name'       => 'X25519',
-        ]);
-        if ($res !== false) {
+        // Try native X25519 key type first (PHP 8.1+)
+        $res = defined('OPENSSL_KEYTYPE_X25519')
+            ? @openssl_pkey_new(['private_key_type' => OPENSSL_KEYTYPE_X25519])
+            : false;
+        // Fallback to EC curve name (some older builds)
+        if ($res === false) {
+            $res = @openssl_pkey_new([
+                'private_key_type' => OPENSSL_KEYTYPE_EC,
+                'curve_name'       => 'X25519',
+            ]);
+        }
+        if ($res !== false && $res !== null) {
             openssl_pkey_export($res, $privPem);
             $det     = openssl_pkey_get_details($res);
             $privDer = base64_decode(preg_replace('/-----[^-]+-----|[\r\n\s]/', '', $privPem));
@@ -223,7 +246,7 @@ function generateKeypairLocally(): array
 
     throw new RuntimeException(
         'WireGuard keypair generation failed — no suitable method found on this server. ' .
-            'Install one of: php-sodium  |  wireguard-tools  |  openssl (CLI)'
+            'Install one of: php-sodium  |  wireguard-tools  |  openssl (CLI)  |  php-gmp'
     );
 }
 
