@@ -6,7 +6,7 @@
 
 ## پیش‌نیازها
 
-- PHP 8.0 یا بالاتر + extension های `pdo_mysql`، `openssl`
+- PHP 8.0 یا بالاتر + extension های `pdo_mysql`، `openssl`، `sodium`، `gmp`
 - MySQL / MariaDB
 - فعال بودن **API** میکروتیک روی پورت `8728`
 - فعال بودن WireGuard روی میکروتیک
