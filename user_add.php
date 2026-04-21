@@ -20,6 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $downloadSpeed = postStr('download_speed', '10M');
     $uploadSpeed   = postStr('upload_speed',   '10M');
     $expiryDate    = postStr('expiry_date');
+    $dataLimitRaw  = postStr('data_limit_gb');
+    $dataLimitGb   = is_numeric($dataLimitRaw) && (float)$dataLimitRaw > 0 ? (float)$dataLimitRaw : null;
     $notes         = postStr('notes');
 
     // --- Validation ---
@@ -63,8 +65,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             dbQuery(
                 'INSERT INTO wg_users
                  (name, username, mikrotik_peer_id, mikrotik_queue_id, public_key, private_key,
-                  allowed_address, download_speed, upload_speed, expiry_date, notes)
-                 VALUES (?,?,?,?,?,?,?,?,?,?,?)',
+                  allowed_address, download_speed, upload_speed, expiry_date, data_limit_gb, notes)
+                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
                 [
                     $name,
                     $username,
@@ -76,6 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $downloadSpeed,
                     $uploadSpeed,
                     $expiry,
+                    $dataLimitGb,
                     $notes,
                 ]
             );
@@ -155,6 +158,15 @@ include __DIR__ . '/templates/header.php';
                     <input type="date" name="expiry_date" class="form-control" dir="ltr"
                         value="<?= postStr('expiry_date') ?>">
                     <div class="form-text">خالی = بدون محدودیت زمانی</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">
+                        <i class="fas fa-database me-1"></i>حجم مجاز (GB)
+                    </label>
+                    <input type="number" name="data_limit_gb" class="form-control" dir="ltr"
+                        min="0.1" step="0.1"
+                        value="<?= htmlspecialchars(postStr('data_limit_gb')) ?>">
+                    <div class="form-text">خالی = بدون محدودیت حجمی</div>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">یادداشت</label>

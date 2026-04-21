@@ -179,3 +179,29 @@ function countExpiredUsers(): int
         'SELECT COUNT(*) FROM wg_users WHERE expiry_date IS NOT NULL AND expiry_date < NOW()'
     )->fetchColumn();
 }
+
+// ----------------------------------------------------------------
+// Formatting helpers
+// ----------------------------------------------------------------
+
+/**
+ * Format bytes to a human-readable string (B, KB, MB, GB, TB).
+ */
+function formatBytes(int $bytes, int $decimals = 2): string
+{
+    if ($bytes <= 0) return '0 B';
+    $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    $i = (int) min(floor(log($bytes, 1024)), count($units) - 1);
+    return round($bytes / (1024 ** $i), $decimals) . ' ' . $units[$i];
+}
+
+/**
+ * Calculate bandwidth usage percentage for a user.
+ * Returns null if no data limit is set.
+ */
+function dataUsagePercent(int $usedBytes, ?float $limitGb): ?float
+{
+    if ($limitGb === null || $limitGb <= 0) return null;
+    $limitBytes = $limitGb * 1073741824; // 1 GB = 1024^3 bytes
+    return min(100, round(($usedBytes / $limitBytes) * 100, 1));
+}

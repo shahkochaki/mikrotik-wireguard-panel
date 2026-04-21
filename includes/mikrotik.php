@@ -26,19 +26,43 @@ function mtConnect(): RouterosAPI
 // ----------------------------------------------------------------
 
 /**
- * Generate a WireGuard keypair via MikroTik.
- * Returns ['public-key' => ..., 'private-key' => ...] or throws.
+ * Generate a WireGuard keypair locally using PHP's libsodium (Curve25519).
+ * No router connection needed. PHP 7.2+ has sodium bundled.
+ */
+function generateKeypairLocally(): array
+{
+    $private = random_bytes(32);
+    // Clamp the private key per Curve25519 spec
+    $private[0]  = chr(ord($private[0])  & 248);
+    $private[31] = chr((ord($private[31]) & 127) | 64);
+    $public = sodium_crypto_scalarmult_base($private);
+    return [
+        'private-key' => base64_encode($private),
+        'public-key'  => base64_encode($public),
+    ];
+}
+
+/**
+ * Generate a WireGuard keypair.
+ * Uses local PHP/sodium generation (no router connection needed).
+ * Falls back to router API only if sodium extension is unavailable.
  */
 function mtGenerateKeypair(): array
 {
+    // Prefer local generation — fast, zero router dependency
+    if (function_exists('sodium_crypto_scalarmult_base')) {
+        return generateKeypairLocally();
+    }
+    // Fallback: ask the router (RouterOS 7.x only)
     $api  = mtConnect();
     $rows = $api->comm('/interface/wireguard/generate-keypair');
     $api->disconnect();
-
     if ($rows === false || empty($rows)) {
-        throw new RuntimeException('Failed to generate keypair');
+        throw new RuntimeException(
+            'Failed to generate keypair — PHP sodium extension not available and router returned no data'
+        );
     }
-    return $rows[0]; // {'public-key': ..., 'private-key': ...}
+    return $rows[0];
 }
 
 /**
@@ -176,6 +200,59 @@ function mtSetQueueDisabled(string $queueId, bool $disabled): void
 // ----------------------------------------------------------------
 // Connectivity test
 // ----------------------------------------------------------------
+
+/**
+ * Fetch live stats (rx, tx, last-handshake) for ALL peers on an interface in one call.
+ * Returns keyed array: [peerId => ['rx' => int, 'tx' => int, 'last-handshake' => string|null]]
+ */
+function mtGetAllPeerStats(string $wgInterface): array
+{
+    $api  = mtConnect();
+    $rows = $api->comm('/interface/wireguard/peers/print', [], ['?interface=' . $wgInterface]);
+    $api->disconnect();
+    if (!$rows) return [];
+    $out = [];
+    foreach ($rows as $row) {
+        $id = $row['.id'] ?? null;
+        if ($id !== null) {
+            $out[$id] = [
+                'rx'             => (int)($row['rx'] ?? 0),
+                'tx'             => (int)($row['tx'] ?? 0),
+                'last-handshake' => $row['last-handshake-time'] ?? null,
+            ];
+        }
+    }
+    return $out;
+}
+
+/**
+ * Fetch router system information: identity, CPU, memory, uptime, version, peer count.
+ */
+function mtGetSystemInfo(): array
+{
+    $api   = mtConnect();
+    $idn   = $api->comm('/system/identity/print');
+    $res   = $api->comm('/system/resource/print');
+    $wg    = getSetting('wg_interface', 'wireguard1');
+    $peers = $api->comm('/interface/wireguard/peers/print', [], ['?interface=' . $wg]);
+    $api->disconnect();
+
+    $r        = $res[0] ?? [];
+    $freeMem  = (int)($r['free-memory']  ?? 0);
+    $totalMem = (int)($r['total-memory'] ?? 1);
+
+    return [
+        'identity'     => $idn[0]['name'] ?? 'Unknown',
+        'uptime'       => $r['uptime']    ?? 'N/A',
+        'version'      => $r['version']   ?? 'N/A',
+        'cpu_load'     => (int)($r['cpu-load'] ?? 0),
+        'free_memory'  => $freeMem,
+        'total_memory' => $totalMem,
+        'mem_percent'  => $totalMem > 0 ? round(100 - ($freeMem / $totalMem * 100)) : 0,
+        'board_name'   => $r['board-name'] ?? 'N/A',
+        'peer_count'   => count($peers ?: []),
+    ];
+}
 
 /**
  * Ping the router and return router identity string.

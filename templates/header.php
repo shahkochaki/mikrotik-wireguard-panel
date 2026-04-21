@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css">
+    <meta name="csrf-token" content="<?= htmlspecialchars(csrfToken()) ?>">
 </head>
 
 <body>
@@ -29,6 +30,9 @@
             </a>
             <a href="user_add.php">
                 <i class="fas fa-user-plus"></i> افزودن کاربر
+            </a>
+            <a href="user_import.php" class="<?= basename($_SERVER['PHP_SELF']) === 'user_import.php' ? 'active' : '' ?>">
+                <i class="fas fa-file-import"></i> ایمپورت از روتر
             </a>
             <a href="settings.php" class="<?= basename($_SERVER['PHP_SELF']) === 'settings.php' ? 'active' : '' ?>">
                 <i class="fas fa-gear"></i> تنظیمات

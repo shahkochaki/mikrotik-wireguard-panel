@@ -50,6 +50,9 @@ include __DIR__ . '/templates/header.php';
         <a href="users.php?check_expiry=1" class="btn btn-outline-warning btn-sm">
             <i class="fas fa-clock me-1"></i>بررسی انقضا
         </a>
+        <a href="user_import.php" class="btn btn-outline-info btn-sm">
+            <i class="fas fa-file-import me-1"></i>ایمپورت از روتر
+        </a>
         <a href="user_add.php" class="btn btn-primary btn-sm">
             <i class="fas fa-user-plus me-1"></i>افزودن کاربر
         </a>
@@ -67,6 +70,7 @@ include __DIR__ . '/templates/header.php';
                         <th>آدرس IP</th>
                         <th>دانلود</th>
                         <th>آپلود</th>
+                        <th>حجم مصرفی</th>
                         <th>تاریخ انقضا</th>
                         <th>وضعیت</th>
                         <th>عملیات</th>
@@ -75,7 +79,7 @@ include __DIR__ . '/templates/header.php';
                 <tbody>
                     <?php if (empty($users)): ?>
                         <tr>
-                            <td colspan="8" class="text-center text-muted py-5">
+                            <td colspan="9" class="text-center text-muted py-5">
                                 <i class="fas fa-users fa-2x d-block mb-2"></i>
                                 هیچ کاربری ثبت نشده است.
                                 <a href="user_add.php" class="d-block mt-2">افزودن اولین کاربر</a>
@@ -83,9 +87,14 @@ include __DIR__ . '/templates/header.php';
                         </tr>
                     <?php else: ?>
                         <?php foreach ($users as $i => $u):
-                            $expired = $u['expiry_date'] && strtotime($u['expiry_date']) < time();
+                            $expired   = $u['expiry_date'] && strtotime($u['expiry_date']) < time();
+                            $usedBytes = (int)($u['rx_bytes'] ?? 0) + (int)($u['tx_bytes'] ?? 0);
+                            $limitGb   = isset($u['data_limit_gb']) && $u['data_limit_gb'] !== null
+                                ? (float)$u['data_limit_gb'] : null;
+                            $usagePct  = dataUsagePercent($usedBytes, $limitGb);
                         ?>
-                            <tr class="<?= $expired ? 'table-danger' : '' ?>">
+                            <tr class="<?= $expired ? 'table-danger' : '' ?>"
+                                data-user-id="<?= $u['id'] ?>">
                                 <td><?= $i + 1 ?></td>
                                 <td>
                                     <strong><?= e($u['name']) ?></strong>
@@ -94,6 +103,17 @@ include __DIR__ . '/templates/header.php';
                                 <td><code><?= e($u['allowed_address']) ?></code></td>
                                 <td><i class="fas fa-arrow-down text-success"></i> <?= e($u['download_speed']) ?></td>
                                 <td><i class="fas fa-arrow-up text-primary"></i> <?= e($u['upload_speed']) ?></td>
+                                <td class="usage-cell" data-user-id="<?= $u['id'] ?>">
+                                    <?php if ($limitGb !== null): ?>
+                                        <small><?= formatBytes($usedBytes) ?> / <?= $limitGb ?> GB</small>
+                                        <div class="progress mt-1" style="height:5px" title="<?= $usagePct ?>%">
+                                            <div class="progress-bar <?= $usagePct >= 90 ? 'bg-danger' : ($usagePct >= 70 ? 'bg-warning' : 'bg-success') ?>"
+                                                style="width:<?= $usagePct ?>%"></div>
+                                        </div>
+                                    <?php else: ?>
+                                        <span class="text-muted small"><?= formatBytes($usedBytes) ?></span>
+                                    <?php endif; ?>
+                                </td>
                                 <td>
                                     <?php if ($u['expiry_date']): ?>
                                         <?= $expired
@@ -104,7 +124,7 @@ include __DIR__ . '/templates/header.php';
                                         <span class="badge bg-secondary">نامحدود</span>
                                     <?php endif; ?>
                                 </td>
-                                <td>
+                                <td class="status-cell">
                                     <?= $u['is_active']
                                         ? '<span class="badge bg-success">فعال</span>'
                                         : '<span class="badge bg-secondary">غیرفعال</span>'
@@ -112,27 +132,28 @@ include __DIR__ . '/templates/header.php';
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <!-- Download config -->
                                         <a href="user_config.php?id=<?= $u['id'] ?>"
                                             class="btn btn-outline-info" title="دانلود کانفیگ">
                                             <i class="fas fa-download"></i>
                                         </a>
-                                        <!-- Edit -->
                                         <a href="user_edit.php?id=<?= $u['id'] ?>"
                                             class="btn btn-outline-secondary" title="ویرایش">
                                             <i class="fas fa-pen"></i>
                                         </a>
-                                        <!-- Toggle active -->
-                                        <a href="user_toggle.php?id=<?= $u['id'] ?>"
-                                            class="btn <?= $u['is_active'] ? 'btn-outline-warning' : 'btn-outline-success' ?>"
+                                        <button type="button"
+                                            class="btn <?= $u['is_active'] ? 'btn-outline-warning' : 'btn-outline-success' ?> btn-ajax-toggle"
+                                            data-id="<?= $u['id'] ?>"
+                                            data-active="<?= $u['is_active'] ?>"
                                             title="<?= $u['is_active'] ? 'غیرفعال کردن' : 'فعال کردن' ?>">
                                             <i class="fas <?= $u['is_active'] ? 'fa-pause' : 'fa-play' ?>"></i>
-                                        </a>
-                                        <!-- Delete -->
-                                        <a href="user_delete.php?id=<?= $u['id'] ?>"
-                                            class="btn btn-outline-danger confirm-delete" title="حذف">
+                                        </button>
+                                        <button type="button"
+                                            class="btn btn-outline-danger btn-ajax-delete"
+                                            data-id="<?= $u['id'] ?>"
+                                            data-name="<?= e($u['name']) ?>"
+                                            title="حذف">
                                             <i class="fas fa-trash"></i>
-                                        </a>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>

@@ -27,6 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $expiryDate    = postStr('expiry_date');
     $notes         = postStr('notes');
     $isActive      = isset($_POST['is_active']) ? 1 : 0;
+    $dataLimitRaw  = postStr('data_limit_gb');
+    $dataLimitGb   = is_numeric($dataLimitRaw) && (float)$dataLimitRaw > 0 ? (float)$dataLimitRaw : null;
 
     if (!$name) $errors[] = 'نام نمایشی الزامی است.';
 
@@ -57,9 +59,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             dbQuery(
                 'UPDATE wg_users SET name=?, download_speed=?, upload_speed=?,
-                 expiry_date=?, is_active=?, notes=?, updated_at=NOW()
+                 expiry_date=?, is_active=?, notes=?, data_limit_gb=?, updated_at=NOW()
                  WHERE id=?',
-                [$name, $downloadSpeed, $uploadSpeed, $expiry, $isActive, $notes, $id]
+                [$name, $downloadSpeed, $uploadSpeed, $expiry, $isActive, $notes, $dataLimitGb, $id]
             );
 
             // Reload
@@ -136,6 +138,15 @@ include __DIR__ . '/templates/header.php';
                                 value="<?= $user['expiry_date'] ? date('Y-m-d', strtotime($user['expiry_date'])) : '' ?>">
                         </div>
                         <div class="col-md-6">
+                            <label class="form-label">
+                                <i class="fas fa-database me-1"></i>حجم مجاز (GB)
+                            </label>
+                            <input type="number" name="data_limit_gb" class="form-control" dir="ltr"
+                                min="0.1" step="0.1"
+                                value="<?= e($user['data_limit_gb'] ?? '') ?>">
+                            <div class="form-text">خالی = بدون محدودیت حجمی</div>
+                        </div>
+                        <div class="col-md-6">
                             <label class="form-label">یادداشت</label>
                             <input type="text" name="notes" class="form-control"
                                 value="<?= e($user['notes'] ?? '') ?>">
@@ -176,6 +187,29 @@ include __DIR__ . '/templates/header.php';
                     <dd class="col-7"><code><?= e($user['mikrotik_peer_id'] ?? '—') ?></code></dd>
                     <dt class="col-5">Queue ID</dt>
                     <dd class="col-7"><code><?= e($user['mikrotik_queue_id'] ?? '—') ?></code></dd>
+                    <?php
+                    $rx    = (int)($user['rx_bytes'] ?? 0);
+                    $tx    = (int)($user['tx_bytes'] ?? 0);
+                    $total = $rx + $tx;
+                    $limitGb = isset($user['data_limit_gb']) && $user['data_limit_gb'] !== null
+                        ? (float)$user['data_limit_gb'] : null;
+                    $pct = dataUsagePercent($total, $limitGb);
+                    ?>
+                    <dt class="col-5">دانلود</dt>
+                    <dd class="col-7"><?= formatBytes($rx) ?></dd>
+                    <dt class="col-5">آپلود</dt>
+                    <dd class="col-7"><?= formatBytes($tx) ?></dd>
+                    <dt class="col-5">کل مصرف</dt>
+                    <dd class="col-7">
+                        <?= formatBytes($total) ?>
+                        <?php if ($limitGb !== null): ?>
+                            / <?= $limitGb ?> GB
+                            <div class="progress mt-1" style="height:5px">
+                                <div class="progress-bar <?= $pct >= 90 ? 'bg-danger' : ($pct >= 70 ? 'bg-warning' : 'bg-success') ?>"
+                                    style="width:<?= $pct ?>%"></div>
+                            </div>
+                        <?php endif; ?>
+                    </dd>
                     <dt class="col-5">ایجاد شده</dt>
                     <dd class="col-7"><?= e($user['created_at']) ?></dd>
                 </dl>
