@@ -1,9 +1,9 @@
-<?php
-require_once __DIR__ . '/includes/config.php';
-require_once __DIR__ . '/includes/db.php';
-require_once __DIR__ . '/includes/auth.php';
-require_once __DIR__ . '/includes/functions.php';
-require_once __DIR__ . '/includes/mikrotik.php';
+﻿<?php
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/mikrotik.php';
 
 requireLogin();
 
@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
 
             flashSet('success', "کاربر «{$name}» با موفقیت ایجاد شد.");
-            header('Location: users.php');
+            header('Location: users');
             exit;
         } catch (Throwable $e) {
             $errors[] = 'خطا در ارتباط با میکروتیک: ' . $e->getMessage();
@@ -93,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $speedOptions = speedOptions();
-include __DIR__ . '/templates/header.php';
+include __DIR__ . '/../templates/header.php';
 ?>
 
 <?php if ($errors): ?>
@@ -179,10 +179,10 @@ include __DIR__ . '/templates/header.php';
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-check me-2"></i>ایجاد کاربر
                 </button>
-                <a href="users.php" class="btn btn-outline-secondary">انصراف</a>
+                <a href="users" class="btn btn-outline-secondary">انصراف</a>
             </div>
         </form>
     </div>
 </div>
 
-<?php include __DIR__ . '/templates/footer.php'; ?>
+<?php include __DIR__ . '/../templates/footer.php'; ?>

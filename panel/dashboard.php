@@ -1,9 +1,9 @@
-<?php
-require_once __DIR__ . '/includes/config.php';
-require_once __DIR__ . '/includes/db.php';
-require_once __DIR__ . '/includes/auth.php';
-require_once __DIR__ . '/includes/functions.php';
-require_once __DIR__ . '/includes/mikrotik.php';
+﻿<?php
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/mikrotik.php';
 
 requireLogin();
 
@@ -21,7 +21,7 @@ $recentUsers = dbQuery(
     'SELECT * FROM wg_users ORDER BY created_at DESC LIMIT 5'
 )->fetchAll();
 
-include __DIR__ . '/templates/header.php';
+include __DIR__ . '/../templates/header.php';
 ?>
 
 <?= flashHtml() ?>
@@ -185,7 +185,7 @@ include __DIR__ . '/templates/header.php';
 <div class="card border-0 shadow-sm">
     <div class="card-header bg-transparent d-flex align-items-center justify-content-between">
         <h6 class="mb-0 fw-semibold"><i class="fas fa-list me-2"></i>آخرین کاربران اضافه شده</h6>
-        <a href="users.php" class="btn btn-sm btn-outline-primary">مشاهده همه</a>
+        <a href="users" class="btn btn-sm btn-outline-primary">مشاهده همه</a>
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
@@ -239,7 +239,7 @@ include __DIR__ . '/templates/header.php';
                                     ?>
                                 </td>
                                 <td>
-                                    <a href="user_edit.php?id=<?= $u['id'] ?>" class="btn btn-sm btn-outline-secondary">
+                                    <a href="user_edit?id=<?= $u['id'] ?>" class="btn btn-sm btn-outline-secondary">
                                         <i class="fas fa-pen"></i>
                                     </a>
                                 </td>
@@ -252,4 +252,4 @@ include __DIR__ . '/templates/header.php';
     </div>
 </div>
 
-<?php include __DIR__ . '/templates/footer.php'; ?>
+<?php include __DIR__ . '/../templates/footer.php'; ?>

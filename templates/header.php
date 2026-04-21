@@ -22,23 +22,26 @@
             <i class="fas fa-shield-halved me-2"></i><?= APP_NAME ?>
         </div>
         <nav class="sidebar-nav">
-            <a href="dashboard.php" class="<?= basename($_SERVER['PHP_SELF']) === 'dashboard.php' ? 'active' : '' ?>">
+            <a href="dashboard" class="<?= basename($_SERVER['PHP_SELF'], '.php') === 'dashboard' ? 'active' : '' ?>">
                 <i class="fas fa-gauge-high"></i> داشبورد
             </a>
-            <a href="users.php" class="<?= in_array(basename($_SERVER['PHP_SELF']), ['users.php', 'user_add.php', 'user_edit.php']) ? 'active' : '' ?>">
+            <a href="users" class="<?= in_array(basename($_SERVER['PHP_SELF'], '.php'), ['users', 'user_add', 'user_edit', 'user_import']) ? 'active' : '' ?>">
                 <i class="fas fa-users"></i> مدیریت کاربران
             </a>
-            <a href="user_add.php">
+            <a href="user_add">
                 <i class="fas fa-user-plus"></i> افزودن کاربر
             </a>
-            <a href="user_import.php" class="<?= basename($_SERVER['PHP_SELF']) === 'user_import.php' ? 'active' : '' ?>">
+            <a href="user_import" class="<?= basename($_SERVER['PHP_SELF'], '.php') === 'user_import' ? 'active' : '' ?>">
                 <i class="fas fa-file-import"></i> ایمپورت از روتر
             </a>
-            <a href="settings.php" class="<?= basename($_SERVER['PHP_SELF']) === 'settings.php' ? 'active' : '' ?>">
+            <a href="wireguard_guide" class="<?= basename($_SERVER['PHP_SELF'], '.php') === 'wireguard_guide' ? 'active' : '' ?>">
+                <i class="fas fa-circle-nodes"></i> راه‌اندازی WireGuard
+            </a>
+            <a href="settings" class="<?= basename($_SERVER['PHP_SELF'], '.php') === 'settings' ? 'active' : '' ?>">
                 <i class="fas fa-gear"></i> تنظیمات
             </a>
             <div class="sidebar-divider"></div>
-            <a href="logout.php" class="text-danger">
+            <a href="logout" class="text-danger">
                 <i class="fas fa-right-from-bracket"></i> خروج
             </a>
         </nav>
@@ -59,7 +62,7 @@
             <h5 class="mb-0 fw-semibold"><?= isset($pageTitle) ? e($pageTitle) : '' ?></h5>
             <div class="d-flex align-items-center gap-2">
                 <span class="badge bg-success"><i class="fas fa-circle fa-xs me-1"></i>آنلاین</span>
-                <a href="logout.php" class="btn btn-sm btn-outline-danger">
+                <a href="logout" class="btn btn-sm btn-outline-danger">
                     <i class="fas fa-right-from-bracket"></i>
                 </a>
             </div>

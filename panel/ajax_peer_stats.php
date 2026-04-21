@@ -1,14 +1,14 @@
-<?php
+﻿<?php
 
 /**
  * AJAX – returns live bandwidth stats for all WireGuard peers.
  * Falls back to DB-cached values if router is unreachable.
  */
-require_once __DIR__ . '/includes/config.php';
-require_once __DIR__ . '/includes/db.php';
-require_once __DIR__ . '/includes/auth.php';
-require_once __DIR__ . '/includes/functions.php';
-require_once __DIR__ . '/includes/mikrotik.php';
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/mikrotik.php';
 
 header('Content-Type: application/json; charset=utf-8');
 

@@ -1,8 +1,8 @@
-<?php
-require_once __DIR__ . '/includes/config.php';
-require_once __DIR__ . '/includes/db.php';
-require_once __DIR__ . '/includes/auth.php';
-require_once __DIR__ . '/includes/functions.php';
+﻿<?php
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/functions.php';
 
 requireLogin();
 
@@ -11,7 +11,7 @@ $pageTitle = 'مدیریت کاربران';
 // Handle bulk expiry check
 $expiredUpdated = 0;
 if (isset($_GET['check_expiry']) && $_GET['check_expiry'] === '1') {
-    require_once __DIR__ . '/includes/mikrotik.php';
+    require_once __DIR__ . '/../includes/mikrotik.php';
     $expired = dbQuery(
         'SELECT id, mikrotik_peer_id, mikrotik_queue_id FROM wg_users
          WHERE is_active = 1 AND expiry_date IS NOT NULL AND expiry_date < NOW()'
@@ -31,13 +31,13 @@ if (isset($_GET['check_expiry']) && $_GET['check_expiry'] === '1') {
         }
     }
     flashSet('info', "بررسی انقضا انجام شد. {$expiredUpdated} کاربر غیرفعال شد.");
-    header('Location: users.php');
+    header('Location: users');
     exit;
 }
 
 $users = getAllUsers();
 
-include __DIR__ . '/templates/header.php';
+include __DIR__ . '/../templates/header.php';
 ?>
 
 <?= flashHtml() ?>
@@ -47,13 +47,13 @@ include __DIR__ . '/templates/header.php';
         <span class="badge bg-secondary me-2"><?= count($users) ?> کاربر</span>
     </div>
     <div class="d-flex gap-2">
-        <a href="users.php?check_expiry=1" class="btn btn-outline-warning btn-sm">
+        <a href="users?check_expiry=1" class="btn btn-outline-warning btn-sm">
             <i class="fas fa-clock me-1"></i>بررسی انقضا
         </a>
-        <a href="user_import.php" class="btn btn-outline-info btn-sm">
+        <a href="user_import" class="btn btn-outline-info btn-sm">
             <i class="fas fa-file-import me-1"></i>ایمپورت از روتر
         </a>
-        <a href="user_add.php" class="btn btn-primary btn-sm">
+        <a href="user_add" class="btn btn-primary btn-sm">
             <i class="fas fa-user-plus me-1"></i>افزودن کاربر
         </a>
     </div>
@@ -82,7 +82,7 @@ include __DIR__ . '/templates/header.php';
                             <td colspan="9" class="text-center text-muted py-5">
                                 <i class="fas fa-users fa-2x d-block mb-2"></i>
                                 هیچ کاربری ثبت نشده است.
-                                <a href="user_add.php" class="d-block mt-2">افزودن اولین کاربر</a>
+                                <a href="user_add" class="d-block mt-2">افزودن اولین کاربر</a>
                             </td>
                         </tr>
                     <?php else: ?>
@@ -132,11 +132,11 @@ include __DIR__ . '/templates/header.php';
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <a href="user_config.php?id=<?= $u['id'] ?>"
+                                        <a href="user_config?id=<?= $u['id'] ?>"
                                             class="btn btn-outline-info" title="دانلود کانفیگ">
                                             <i class="fas fa-download"></i>
                                         </a>
-                                        <a href="user_edit.php?id=<?= $u['id'] ?>"
+                                        <a href="user_edit?id=<?= $u['id'] ?>"
                                             class="btn btn-outline-secondary" title="ویرایش">
                                             <i class="fas fa-pen"></i>
                                         </a>
@@ -165,4 +165,4 @@ include __DIR__ . '/templates/header.php';
     </div>
 </div>
 
-<?php include __DIR__ . '/templates/footer.php'; ?>
+<?php include __DIR__ . '/../templates/footer.php'; ?>

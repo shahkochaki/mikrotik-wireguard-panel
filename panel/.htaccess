@@ -1,0 +1,21 @@
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Serve real files and directories directly (including .php files)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # Rewrite extensionless URLs to their .php counterpart
+    # Only matches paths without a dot (no extension)
+    RewriteRule ^([^.]+)$ $1.php [L,NC]
+
+</IfModule>
+
+# Deny access to hidden files
+
+<FilesMatch "^\.">
+Order Allow,Deny
+Deny from all
+</FilesMatch>

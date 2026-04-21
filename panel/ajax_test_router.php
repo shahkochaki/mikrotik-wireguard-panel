@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /**
  * AJAX endpoint — tests MikroTik connection step by step.
@@ -6,10 +6,10 @@
  * Accepts optional POST overrides (host, port, user, pass) so the
  * settings page can test *before* saving.
  */
-require_once __DIR__ . '/includes/config.php';
-require_once __DIR__ . '/includes/db.php';
-require_once __DIR__ . '/includes/auth.php';
-require_once __DIR__ . '/includes/mikrotik.php';
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/mikrotik.php';
 
 header('Content-Type: application/json; charset=utf-8');
 

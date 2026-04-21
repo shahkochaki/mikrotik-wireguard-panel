@@ -1,9 +1,9 @@
-<?php
-require_once __DIR__ . '/includes/config.php';
-require_once __DIR__ . '/includes/db.php';
-require_once __DIR__ . '/includes/auth.php';
-require_once __DIR__ . '/includes/functions.php';
-require_once __DIR__ . '/includes/mikrotik.php';
+﻿<?php
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/mikrotik.php';
 
 requireLogin();
 
@@ -11,7 +11,7 @@ $id   = getInt('id');
 $user = getUserById($id);
 if (!$user) {
     flashSet('danger', 'کاربر یافت نشد.');
-    header('Location: users.php');
+    header('Location: users');
     exit;
 }
 
@@ -34,12 +34,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     dbQuery('DELETE FROM wg_users WHERE id = ?', [$id]);
     flashSet('success', 'کاربر «' . $user['name'] . '» حذف شد.');
-    header('Location: users.php');
+    header('Location: users');
     exit;
 }
 
 $pageTitle = 'حذف کاربر';
-include __DIR__ . '/templates/header.php';
+include __DIR__ . '/../templates/header.php';
 ?>
 
 <div class="row justify-content-center">
@@ -65,7 +65,7 @@ include __DIR__ . '/templates/header.php';
                         <button type="submit" class="btn btn-danger">
                             <i class="fas fa-trash me-2"></i>بله، حذف کن
                         </button>
-                        <a href="users.php" class="btn btn-outline-secondary">انصراف</a>
+                        <a href="users" class="btn btn-outline-secondary">انصراف</a>
                     </div>
                 </form>
             </div>
@@ -73,4 +73,4 @@ include __DIR__ . '/templates/header.php';
     </div>
 </div>
 
-<?php include __DIR__ . '/templates/footer.php'; ?>
+<?php include __DIR__ . '/../templates/footer.php'; ?>

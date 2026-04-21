@@ -1,13 +1,13 @@
-<?php
+﻿<?php
 
 /**
  * AJAX – returns router system information (identity, CPU, memory, uptime, version, peer count).
  * Called from dashboard.php on page load.
  */
-require_once __DIR__ . '/includes/config.php';
-require_once __DIR__ . '/includes/db.php';
-require_once __DIR__ . '/includes/auth.php';
-require_once __DIR__ . '/includes/mikrotik.php';
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/mikrotik.php';
 
 header('Content-Type: application/json; charset=utf-8');
 

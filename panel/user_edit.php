@@ -1,9 +1,9 @@
-<?php
-require_once __DIR__ . '/includes/config.php';
-require_once __DIR__ . '/includes/db.php';
-require_once __DIR__ . '/includes/auth.php';
-require_once __DIR__ . '/includes/functions.php';
-require_once __DIR__ . '/includes/mikrotik.php';
+﻿<?php
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/mikrotik.php';
 
 requireLogin();
 
@@ -11,7 +11,7 @@ $id   = getInt('id');
 $user = getUserById($id);
 if (!$user) {
     flashSet('danger', 'کاربر یافت نشد.');
-    header('Location: users.php');
+    header('Location: users');
     exit;
 }
 
@@ -74,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $speedOptions = speedOptions();
-include __DIR__ . '/templates/header.php';
+include __DIR__ . '/../templates/header.php';
 ?>
 
 <?= flashHtml() ?>
@@ -164,7 +164,7 @@ include __DIR__ . '/templates/header.php';
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save me-2"></i>ذخیره تغییرات
                         </button>
-                        <a href="users.php" class="btn btn-outline-secondary">بازگشت</a>
+                        <a href="users" class="btn btn-outline-secondary">بازگشت</a>
                     </div>
                 </form>
             </div>
@@ -217,14 +217,14 @@ include __DIR__ . '/templates/header.php';
         </div>
 
         <div class="d-grid gap-2">
-            <a href="user_config.php?id=<?= $id ?>" class="btn btn-outline-info">
+            <a href="user_config?id=<?= $id ?>" class="btn btn-outline-info">
                 <i class="fas fa-download me-2"></i>دانلود فایل کانفیگ
             </a>
-            <a href="user_delete.php?id=<?= $id ?>" class="btn btn-outline-danger confirm-delete">
+            <a href="user_delete?id=<?= $id ?>" class="btn btn-outline-danger confirm-delete">
                 <i class="fas fa-trash me-2"></i>حذف کاربر
             </a>
         </div>
     </div>
 </div>
 
-<?php include __DIR__ . '/templates/footer.php'; ?>
+<?php include __DIR__ . '/../templates/footer.php'; ?>

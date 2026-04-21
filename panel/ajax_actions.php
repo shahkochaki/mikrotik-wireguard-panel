@@ -1,14 +1,14 @@
-<?php
+﻿<?php
 
 /**
  * AJAX endpoint for user actions: toggle_user, delete_user.
  * All requests must be POST with a valid CSRF token.
  */
-require_once __DIR__ . '/includes/config.php';
-require_once __DIR__ . '/includes/db.php';
-require_once __DIR__ . '/includes/auth.php';
-require_once __DIR__ . '/includes/functions.php';
-require_once __DIR__ . '/includes/mikrotik.php';
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/mikrotik.php';
 
 header('Content-Type: application/json; charset=utf-8');
 

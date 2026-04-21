@@ -1,9 +1,9 @@
-<?php
-require_once __DIR__ . '/includes/config.php';
-require_once __DIR__ . '/includes/db.php';
-require_once __DIR__ . '/includes/auth.php';
-require_once __DIR__ . '/includes/functions.php';
-require_once __DIR__ . '/includes/mikrotik.php';
+﻿<?php
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/mikrotik.php';
 
 requireLogin();
 
@@ -35,12 +35,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // فقط ذخیره کن و redirect بده — تست اتصال از طریق AJAX انجام می‌شه
     flashSet('success', 'تنظیمات با موفقیت ذخیره شد.');
-    header('Location: settings.php');
+    header('Location: settings');
     exit;
 }
 
 $s = getAllSettings();
-include __DIR__ . '/templates/header.php';
+include __DIR__ . '/../templates/header.php';
 ?>
 
 <?= flashHtml() ?>
@@ -233,8 +233,8 @@ include __DIR__ . '/templates/header.php';
         <code class="d-block p-3 bg-dark text-light rounded" dir="ltr">
             * * * * * php <?= e(BASE_PATH) ?>/cron_check_expiry.php >> /var/log/wg_expiry.log 2>&amp;1
         </code>
-        <p class="mt-2 text-muted small">یا می‌توانید از <a href="users.php?check_expiry=1">بررسی دستی</a> استفاده کنید.</p>
+        <p class="mt-2 text-muted small">یا می‌توانید از <a href="users?check_expiry=1">بررسی دستی</a> استفاده کنید.</p>
     </div>
 </div>
 
-<?php include __DIR__ . '/templates/footer.php'; ?>
+<?php include __DIR__ . '/../templates/footer.php'; ?>

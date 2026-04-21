@@ -9,7 +9,7 @@ require_once __DIR__ . '/db.php';
 function requireLogin(): void
 {
     if (empty($_SESSION['admin_id'])) {
-        header('Location: ' . BASE_URL . '/index.php');
+        header('Location: ' . BASE_URL . '/panel/');
         exit;
     }
 }

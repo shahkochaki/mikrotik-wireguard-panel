@@ -1,9 +1,9 @@
-<?php
-require_once __DIR__ . '/includes/config.php';
-require_once __DIR__ . '/includes/db.php';
-require_once __DIR__ . '/includes/auth.php';
-require_once __DIR__ . '/includes/functions.php';
-require_once __DIR__ . '/includes/mikrotik.php';
+﻿<?php
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/mikrotik.php';
 
 requireLogin();
 
@@ -11,7 +11,7 @@ $id   = getInt('id');
 $user = getUserById($id);
 if (!$user) {
     flashSet('danger', 'کاربر یافت نشد.');
-    header('Location: users.php');
+    header('Location: users');
     exit;
 }
 
@@ -31,5 +31,5 @@ try {
     flashSet('danger', 'خطا: ' . $e->getMessage());
 }
 
-header('Location: users.php');
+header('Location: users');
 exit;

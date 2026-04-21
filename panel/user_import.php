@@ -1,9 +1,9 @@
-<?php
-require_once __DIR__ . '/includes/config.php';
-require_once __DIR__ . '/includes/db.php';
-require_once __DIR__ . '/includes/auth.php';
-require_once __DIR__ . '/includes/functions.php';
-require_once __DIR__ . '/includes/mikrotik.php';
+﻿<?php
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/mikrotik.php';
 
 requireLogin();
 
@@ -119,13 +119,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($imported > 0 && empty($errors)) {
         flashSet('success', "{$imported} کاربر با موفقیت ایمپورت شد.");
-        header('Location: users.php');
+        header('Location: users');
         exit;
     }
 }
 
 $speedOptions = speedOptions();
-include __DIR__ . '/templates/header.php';
+include __DIR__ . '/../templates/header.php';
 ?>
 
 <?= flashHtml() ?>
@@ -273,7 +273,7 @@ include __DIR__ . '/templates/header.php';
             <button type="submit" class="btn btn-primary">
                 <i class="fas fa-file-import me-2"></i>ایمپورت انتخاب‌شده‌ها
             </button>
-            <a href="users.php" class="btn btn-outline-secondary ms-2">انصراف</a>
+            <a href="users" class="btn btn-outline-secondary ms-2">انصراف</a>
         </div>
     </form>
 
@@ -300,4 +300,4 @@ include __DIR__ . '/templates/header.php';
     </script>
 <?php endif; ?>
 
-<?php include __DIR__ . '/templates/footer.php'; ?>
+<?php include __DIR__ . '/../templates/footer.php'; ?>

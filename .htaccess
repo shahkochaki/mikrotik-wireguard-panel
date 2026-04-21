@@ -1,0 +1,19 @@
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Redirect bare root to panel login
+    RewriteRule ^$ panel/ [R=302,L]
+
+    # Block direct web access to server-side internals
+    RewriteRule ^(includes|lib|sql|templates)(/|$) - [F,L]
+
+</IfModule>
+
+# Deny hidden files
+
+<FilesMatch "^\.">
+Order Allow,Deny
+Deny from all
+</FilesMatch>
