@@ -26,6 +26,14 @@ $config = preg_replace('/^[ \t]+/m', '', $config);
 
 $filename = 'wg_' . preg_replace('/[^a-z0-9_\-]/i', '_', $user['username']) . '.conf';
 
+// Remove BOM if any included file introduced one into the output buffer
+if (ob_get_level()) {
+    ob_end_clean();
+}
+
+// Ensure the config string itself has no BOM
+$config = ltrim($config, "\xEF\xBB\xBF");
+
 header('Content-Type: text/plain; charset=utf-8');
 header('Content-Disposition: attachment; filename="' . $filename . '"');
 header('Content-Length: ' . strlen($config));
