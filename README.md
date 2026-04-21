@@ -162,52 +162,90 @@ Use the **Test Connection** button to run a step-by-step diagnostic (TCP → log
 
 ---
 
-## Cron Job (انقضا خودکار)
+## Cron Job (Auto-expiry & Quota Enforcement)
+
+The cron script syncs bandwidth stats from the router and automatically disables users that have:
+
+- exceeded their data quota, or
+- passed their expiry date.
+
+Add this line to your crontab (`crontab -e`):
 
 ```bash
 * * * * * php /var/www/html/wireguard-panel/cron/check_expiry.php >> /var/log/wg_expiry.log 2>&1
 ```
 
----
-
-## امنیت
-
-- فایل `.htaccess` برای محدود کردن دسترسی به پوشه `includes/` و `lib/` اضافه کنید
-- از HTTPS استفاده کنید
-- رمز پیش‌فرض را تغییر دهید
+The script only runs from CLI. Direct HTTP access is blocked with a 403 response.
 
 ---
 
-## ساختار پروژه
+## Security Recommendations
+
+- **Change the default `admin` password** on first login
+- Serve the panel over **HTTPS** (Let's Encrypt / your own certificate)
+- Restrict MikroTik API access to the panel server IP only
+- Deny direct HTTP access to `includes/` and `lib/` directories
+- Keep PHP, MySQL, and RouterOS up to date
+- Consider placing the panel behind a VPN or firewall so it is not exposed to the public internet
+
+---
+
+## Project Structure
 
 ```
 wireguard-panel/
 ├── assets/
-│   ├── css/style.css
-│   └── js/main.js
-├── includes/
-│   ├── config.php      ← تنظیمات دیتابیس
-│   ├── db.php          ← اتصال PDO
-│   ├── auth.php        ← ورود / خروج / CSRF
-│   ├── mikrotik.php    ← API میکروتیک
-│   └── functions.php   ← توابع کمکی
-├── lib/
-│   └── RouterosAPI.php ← کلاینت RouterOS API
-├── templates/
-│   ├── header.php
-│   └── footer.php
-├── sql/
-│   └── database.sql
+│   ├── css/style.css          ← Stylesheet
+│   └── js/main.js             ← Front-end scripts
 ├── cron/
-│   └── check_expiry.php
-├── index.php           ← صفحه ورود
-├── dashboard.php
-├── users.php
-├── user_add.php
-├── user_edit.php
-├── user_delete.php
-├── user_toggle.php
-├── user_config.php     ← دانلود .conf کلاینت
-├── settings.php
-└── logout.php
+│   └── check_expiry.php       ← Expiry / quota enforcement (CLI only)
+├── includes/
+│   ├── config.php             ← App & database configuration
+│   ├── db.php                 ← PDO connection + helpers
+│   ├── auth.php               ← Login / logout / CSRF
+│   ├── mikrotik.php           ← MikroTik API wrapper (peers, queues, stats)
+│   └── functions.php          ← Shared helper functions
+├── lib/
+│   └── RouterosAPI.php        ← Low-level RouterOS API client
+├── panel/
+│   ├── index.php              ← Login page
+│   ├── dashboard.php          ← Overview & live router stats
+│   ├── users.php              ← Peer list
+│   ├── user_add.php           ← Add new peer
+│   ├── user_edit.php          ← Edit peer
+│   ├── user_delete.php        ← Delete peer
+│   ├── user_toggle.php        ← Enable / disable peer
+│   ├── user_config.php        ← Download client .conf file
+│   ├── user_import.php        ← Bulk peer import
+│   ├── settings.php           ← Panel & router settings
+│   ├── logout.php             ← Session logout
+│   ├── ajax_actions.php       ← AJAX endpoint (general)
+│   ├── ajax_peer_stats.php    ← AJAX endpoint (live peer stats)
+│   ├── ajax_router_info.php   ← AJAX endpoint (router system info)
+│   └── ajax_test_router.php   ← AJAX endpoint (diagnostics)
+├── sql/
+│   ├── database.sql           ← Initial schema
+│   └── migration_v2.sql       ← Schema upgrade from v1
+└── templates/
+    ├── header.php             ← Shared HTML header / nav
+    └── footer.php             ← Shared HTML footer
 ```
+
+---
+
+## Troubleshooting
+
+| Symptom                       | Likely cause                       | Fix                                                 |
+| ----------------------------- | ---------------------------------- | --------------------------------------------------- |
+| "MikroTik connection failed"  | API service disabled or wrong port | Run `/ip service enable api` on the router          |
+| "Port closed or unreachable"  | Firewall blocking port 8728        | Allow TCP 8728 from the panel server IP             |
+| "Login error"                 | Wrong username or password         | Check credentials in Settings                       |
+| WireGuard interface not found | Wrong interface name               | Verify with `/interface wireguard print`            |
+| Keypair generation fails      | No suitable PHP extension          | Install `php-sodium` or `php-gmp`                   |
+| Client can't connect          | Wrong endpoint / public key        | Re-check Endpoint and Server Public Key in Settings |
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE) for details.
