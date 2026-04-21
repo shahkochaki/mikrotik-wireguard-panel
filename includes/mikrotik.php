@@ -26,13 +26,101 @@ function mtConnect(): RouterosAPI
 // ----------------------------------------------------------------
 
 /**
+ * X25519 scalar multiplication via GMP (RFC 7748 Montgomery ladder).
+ * Returns 32 raw bytes of the result, or null if GMP is unavailable.
+ *
+ * @internal Used only by generateKeypairLocally()
+ */
+function _x25519_gmp(string $k, string $u): ?string
+{
+    if (!function_exists('gmp_init') || !function_exists('gmp_powm') || !function_exists('gmp_testbit')) {
+        return null;
+    }
+
+    // p = 2^255 - 19
+    $p   = gmp_init('7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffed', 16);
+    $a24 = gmp_init(121665);
+
+    // Always-non-negative modular reduction (PHP GMP mod is non-negative for positive divisor)
+    $md = static function (\GMP $a) use ($p): \GMP {
+        $r = gmp_mod($a, $p);
+        return (gmp_sign($r) < 0) ? gmp_add($r, $p) : $r;
+    };
+
+    // Little-endian 32 bytes → GMP integer
+    $dec = static function (string $b): \GMP {
+        $hex = '';
+        for ($i = 31; $i >= 0; $i--) {
+            $hex .= sprintf('%02x', ord($b[$i]));
+        }
+        return gmp_init($hex !== '' ? $hex : '0', 16);
+    };
+
+    // GMP integer → little-endian 32 bytes
+    $enc = static function (\GMP $n): string {
+        $hex = str_pad(gmp_strval($n, 16), 64, '0', STR_PAD_LEFT);
+        $out = '';
+        for ($i = 0; $i < 32; $i++) {
+            $out .= chr(hexdec(substr($hex, 62 - $i * 2, 2)));
+        }
+        return $out;
+    };
+
+    // Mask bit 255 of u per RFC 7748 §5
+    $uMasked     = $u;
+    $uMasked[31] = chr(ord($u[31]) & 0x7f);
+
+    $kn = $dec($k);
+    $x1 = $md($dec($uMasked));
+    $x2 = gmp_init(1);
+    $z2 = gmp_init(0);
+    $x3 = $x1;
+    $z3 = gmp_init(1);
+    $sw = 0;
+
+    for ($t = 254; $t >= 0; $t--) {
+        $b  = (int) gmp_testbit($kn, $t);
+        $sw ^= $b;
+        if ($sw) {
+            [$x2, $x3] = [$x3, $x2];
+            [$z2, $z3] = [$z3, $z2];
+        }
+        $sw = $b;
+
+        $A    = $md(gmp_add($x2, $z2));
+        $AA   = $md(gmp_mul($A,  $A));
+        $B    = $md(gmp_sub($x2, $z2));
+        $BB   = $md(gmp_mul($B,  $B));
+        $E    = $md(gmp_sub($AA, $BB));
+        $C    = $md(gmp_add($x3, $z3));
+        $D    = $md(gmp_sub($x3, $z3));
+        $DA   = $md(gmp_mul($D,  $A));
+        $CB   = $md(gmp_mul($C,  $B));
+        $s    = $md(gmp_add($DA, $CB));
+        $x3   = $md(gmp_mul($s,  $s));
+        $df   = $md(gmp_sub($DA, $CB));
+        $z3   = $md(gmp_mul($x1, $md(gmp_mul($df, $df))));
+        $x2   = $md(gmp_mul($AA, $BB));
+        $z2   = $md(gmp_mul($E,  $md(gmp_add($AA, $md(gmp_mul($a24, $E))))));
+    }
+
+    if ($sw) {
+        [$x2, $x3] = [$x3, $x2];
+    }
+
+    $result = $md(gmp_mul($x2, gmp_powm($z2, gmp_sub($p, gmp_init(2)), $p)));
+    return $enc($result);
+}
+
+/**
  * Generate a WireGuard Curve25519 keypair using the best available method:
  *
  *   1. PHP sodium extension  (php-sodium / libsodium — fastest)
  *   2. `wg genkey` CLI       (wireguard-tools on the web server)
  *   3. `openssl genpkey` CLI (OpenSSL binary — almost always present)
- *   4. PHP openssl extension with X25519 curve (PHP 8.0+ / OpenSSL 1.1+)
- *   5. Router API            (RouterOS 7.x — last resort, requires live connection)
+ *   4. Pure PHP + GMP        (works on any PHP with GMP extension — very common)
+ *   5. PHP openssl extension with X25519 curve (PHP 8.1+ / OpenSSL 1.1+)
+ *   6. Router API            (RouterOS 7.x — last resort, requires live connection)
  *
  * Throws RuntimeException only when every method fails.
  */
