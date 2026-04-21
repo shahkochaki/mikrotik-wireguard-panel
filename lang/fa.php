@@ -62,6 +62,7 @@ return [
     'col_ip'                => 'آدرس IP',
     'col_speed'             => 'سرعت',
     'col_expiry'            => 'انقضا',
+    'col_last_handshake'    => 'آخرین اتصال',
     'col_status'            => 'وضعیت',
     'col_actions'           => 'عملیات',
     'no_expiry'             => 'بدون محدودیت',

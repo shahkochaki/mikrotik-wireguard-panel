@@ -72,6 +72,7 @@ include __DIR__ . '/../templates/header.php';
                         <th><?= __('col_upload') ?></th>
                         <th><?= __('col_usage') ?></th>
                         <th><?= __('col_expiry') ?></th>
+                        <th><?= __('col_last_handshake') ?></th>
                         <th><?= __('col_status') ?></th>
                         <th><?= __('col_actions') ?></th>
                     </tr>
@@ -79,7 +80,7 @@ include __DIR__ . '/../templates/header.php';
                 <tbody>
                     <?php if (empty($users)): ?>
                         <tr>
-                            <td colspan="9" class="text-center text-muted py-5">
+                            <td colspan="10" class="text-center text-muted py-5">
                                 <i class="fas fa-users fa-2x d-block mb-2"></i>
                                 <?= __('no_users_registered') ?>
                                 <a href="user_add" class="d-block mt-2"><?= __('add_first_user') ?></a>
@@ -122,6 +123,22 @@ include __DIR__ . '/../templates/header.php';
                                         ?>
                                     <?php else: ?>
                                         <span class="badge bg-secondary"><?= __('unlimited') ?></span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <?php if (!empty($u['last_handshake'])): ?>
+                                        <span class="small text-muted" title="<?= e($u['last_handshake']) ?>">
+                                            <?php
+                                            $lhTime = strtotime($u['last_handshake']);
+                                            $diff   = time() - $lhTime;
+                                            if ($diff < 60)        echo __('just_now') ?: 'just now';
+                                            elseif ($diff < 3600)  echo round($diff / 60) . ' min ago';
+                                            elseif ($diff < 86400) echo round($diff / 3600) . ' hr ago';
+                                            else                   echo date('Y-m-d', $lhTime);
+                                            ?>
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="text-muted small">—</span>
                                     <?php endif; ?>
                                 </td>
                                 <td class="status-cell">
