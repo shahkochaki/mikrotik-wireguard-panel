@@ -1,7 +1,13 @@
 # WireGuard Panel
 
+![Version](https://img.shields.io/badge/version-2.0.0-blue)
+![PHP](https://img.shields.io/badge/PHP-8.0%2B-777BB4?logo=php)
+![License](https://img.shields.io/badge/license-MIT-green)
+
 A web-based WireGuard VPN management panel for MikroTik routers, built with PHP and MySQL.  
 Manage peers, monitor bandwidth, enforce data quotas and expiry dates — all from a clean dashboard.
+
+> **Changelog:** see [CHANGELOG.md](CHANGELOG.md) for a full version history.
 
 ---
 
@@ -12,11 +18,12 @@ Manage peers, monitor bandwidth, enforce data quotas and expiry dates — all fr
 - **Downloadable `.conf` files** — generate ready-to-import WireGuard client configs
 - **Speed limiting** — per-user upload/download limits enforced via MikroTik Simple Queues
 - **Data quota & expiry** — set GB limits and expiry dates; expired/over-quota users are disabled automatically
-- **Live stats** — real-time RX/TX bytes and last-handshake time pulled from the router
+- **Live stats** — real-time RX/TX bytes, last-handshake time, and current client IP pulled from the router
 - **Dashboard** — router identity, CPU load, memory usage, uptime, and peer count at a glance
 - **Diagnostics** — step-by-step connectivity test (TCP reachability → API login → WireGuard interface check)
-- **Bulk import** — import multiple peers at once
-- **CSRF protection** — all state-changing forms are CSRF-token guarded
+- **Bulk import** — discover and import existing peers from the router
+- **Multilingual UI** — Persian (فارسی, RTL) and English (LTR) with a language switcher; preference saved in a browser cookie
+- **CSRF protection** — all state-changing forms and AJAX calls are CSRF-token guarded
 
 ---
 
@@ -344,20 +351,7 @@ The script only runs from CLI. Direct HTTP access is blocked with a 403 response
 
 ```
 wireguard-panel/
-├── assets/
-│   ├── css/style.css          ← Stylesheet
-│   └── js/main.js             ← Front-end scripts
-├── cron/
-│   └── check_expiry.php       ← Expiry / quota enforcement (CLI only)
-├── includes/
-│   ├── config.php             ← App & database configuration
-│   ├── db.php                 ← PDO connection + helpers
-│   ├── auth.php               ← Login / logout / CSRF
-│   ├── mikrotik.php           ← MikroTik API wrapper (peers, queues, stats)
-│   └── functions.php          ← Shared helper functions
-├── lib/
-│   └── RouterosAPI.php        ← Low-level RouterOS API client
-├── panel/
+├── administrator/
 │   ├── index.php              ← Login page
 │   ├── dashboard.php          ← Overview & live router stats
 │   ├── users.php              ← Peer list
@@ -369,16 +363,35 @@ wireguard-panel/
 │   ├── user_import.php        ← Bulk peer import
 │   ├── settings.php           ← Panel & router settings
 │   ├── logout.php             ← Session logout
+│   ├── wireguard_guide.php    ← Step-by-step MikroTik WireGuard guide
 │   ├── ajax_actions.php       ← AJAX endpoint (general)
 │   ├── ajax_peer_stats.php    ← AJAX endpoint (live peer stats)
 │   ├── ajax_router_info.php   ← AJAX endpoint (router system info)
 │   └── ajax_test_router.php   ← AJAX endpoint (diagnostics)
+├── assets/
+│   ├── css/style.css          ← Stylesheet
+│   └── js/main.js             ← Front-end scripts
+├── cron/
+│   └── check_expiry.php       ← Expiry / quota enforcement (CLI only)
+├── includes/
+│   ├── config.php             ← App & database configuration
+│   ├── db.php                 ← PDO connection + helpers
+│   ├── auth.php               ← Login / logout / CSRF
+│   ├── lang.php               ← i18n loader & language helpers
+│   ├── mikrotik.php           ← MikroTik API wrapper (peers, queues, stats)
+│   └── functions.php          ← Shared helper functions
+├── lang/
+│   ├── en.php                 ← English translations
+│   └── fa.php                 ← Persian (فارسی) translations
+├── lib/
+│   └── RouterosAPI.php        ← Low-level RouterOS API client
 ├── sql/
 │   ├── database.sql           ← Initial schema
-│   └── migration_v2.sql       ← Schema upgrade from v1
-└── templates/
-    ├── header.php             ← Shared HTML header / nav
-    └── footer.php             ← Shared HTML footer
+│   └── migration_v2.sql       ← Schema upgrade from v1.x
+├── templates/
+│   ├── header.php             ← Shared HTML header / nav
+│   └── footer.php             ← Shared HTML footer
+└── CHANGELOG.md               ← Version history
 ```
 
 ---
@@ -393,6 +406,20 @@ wireguard-panel/
 | WireGuard interface not found | Wrong interface name               | Verify with `/interface wireguard print`            |
 | Keypair generation fails      | No suitable PHP extension          | Install `php-sodium` or `php-gmp`                   |
 | Client can't connect          | Wrong endpoint / public key        | Re-check Endpoint and Server Public Key in Settings |
+
+---
+
+## Multilingual Support
+
+The panel ships with **Persian (فارسی)** and **English** translations.  
+Switch language from the top-right globe icon — the preference is saved in a browser cookie for 1 year.
+
+| Language | Code | Direction |
+| -------- | ---- | --------- |
+| English  | `en` | LTR       |
+| فارسی    | `fa` | RTL       |
+
+To add a new language, copy `lang/en.php` to `lang/xx.php`, translate the strings, and register the locale in `LANG_SUPPORTED` inside `includes/lang.php`.
 
 ---
 

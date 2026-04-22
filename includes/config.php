@@ -5,7 +5,7 @@
 
 // --- Application ---
 define('APP_NAME',    'WireGuard Panel');
-define('APP_VERSION', '1.0.0');
+define('APP_VERSION', '2.0.0');
 
 // --- Database (edit these) ---
 define('DB_HOST', 'localhost');
