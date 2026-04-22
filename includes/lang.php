@@ -18,17 +18,30 @@ function loadLang(): void
 {
     // Allow switching via query string
     if (isset($_GET['set_lang']) && array_key_exists($_GET['set_lang'], LANG_SUPPORTED)) {
-        $_SESSION['lang'] = $_GET['set_lang'];
+        $newLang = $_GET['set_lang'];
+        $_SESSION['lang'] = $newLang;
+        // Persist language in a cookie for 1 year so it survives browser restarts
+        setcookie('lang', $newLang, [
+            'expires'  => time() + 365 * 24 * 3600,
+            'path'     => '/',
+            'samesite' => 'Lax',
+            'secure'   => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on',
+            'httponly' => false,
+        ]);
         // Redirect without the query string so the GET param doesn't linger
         $url = strtok($_SERVER['REQUEST_URI'], '?');
         header('Location: ' . $url);
         exit;
     }
 
-    $lang = $_SESSION['lang'] ?? 'en';
+    // Priority: session → cookie → default
+    $lang = $_SESSION['lang']
+        ?? (isset($_COOKIE['lang']) && array_key_exists($_COOKIE['lang'], LANG_SUPPORTED) ? $_COOKIE['lang'] : 'en');
     if (!array_key_exists($lang, LANG_SUPPORTED)) {
         $lang = 'en';
     }
+    // Keep session in sync with cookie preference
+    $_SESSION['lang'] = $lang;
 
     $file = dirname(__DIR__) . '/lang/' . $lang . '.php';
     if (!file_exists($file)) {
